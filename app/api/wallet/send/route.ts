@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       0
     );
 
-    const DAILY_LIMIT = 100000;
+    const DAILY_LIMIT = 1000000;
     if (totalWithdrawn + amount > DAILY_LIMIT) {
       return NextResponse.json(
         { error: 'Daily withdrawal limit exceeded' },

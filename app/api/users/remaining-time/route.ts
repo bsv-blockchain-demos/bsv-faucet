@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
 const MAX_DAILY_WITHDRAWAL = parseInt(
-  process.env.NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL || '100000'
+  process.env.NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL || '1000000'
 );
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
