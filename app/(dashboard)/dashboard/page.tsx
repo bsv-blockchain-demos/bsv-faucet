@@ -57,7 +57,7 @@ export default function DashboardPage() {
 
   // const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
   const MAX_DAILY_WITHDRAWAL = parseInt(
-    process.env.NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL || '100000'
+    process.env.NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL || '1000000'
   );
   const treasuryWIF = process.env.NEXT_PUBLIC_TREASURY_WALLET_WIF;
 
