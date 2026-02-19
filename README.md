@@ -112,5 +112,5 @@ Tag other contributors for review.
 
 #### Documenting Changes
 
-Update the README or project wiki to reflect any changes to the schema, including new tables, fields, or relationships.
+Update the README or project wiki to reflect any changes to the schema, including new tables, fields, or relationships
   
