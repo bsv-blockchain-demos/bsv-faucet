@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { currentUser, clerkClient } from '@clerk/nextjs/server';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { PrismaClient } from '@/prisma/generated/client/default';
 
