@@ -234,11 +234,11 @@ export default function DashboardPage() {
               onChange={(e) => setAddress(e.target.value)}
             />
             <Input
-              type="number"
+              type="text"
+              inputMode="numeric"
               placeholder={`Amount (in satoshis, max ${MAX_DAILY_WITHDRAWAL.toLocaleString()})`}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              max={MAX_DAILY_WITHDRAWAL.toString()}
+              value={amount.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
             />
             {/* <ReCAPTCHA
               sitekey={RECAPTCHA_SITE_KEY}
