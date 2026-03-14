@@ -158,7 +158,8 @@ export const createAndSendTransaction = async (
         return {
           sourceTransaction: sourceTx,
           sourceOutputIndex: utxo.tx_pos,
-          unlockingScriptTemplate: new P2PKH().unlock(privateKey)
+          unlockingScriptTemplate: new P2PKH().unlock(privateKey),
+          sequence: 0xffffffff
         };
       })
     );
