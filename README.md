@@ -191,4 +191,4 @@ See [Prisma team development workflow](https://www.prisma.io/docs/orm/prisma-mig
 
 ## License
 
-ISC
+MIT
