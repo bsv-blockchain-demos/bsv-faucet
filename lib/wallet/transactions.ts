@@ -10,7 +10,10 @@ import {
 import { getUTXOs, getRawTransaction, broadcastTransaction } from './regest';
 import { Prisma, PrismaClient } from '@/prisma/generated/client';
 import { currentUser } from '@clerk/nextjs/server';
-import bs58check from 'bs58check';
+import bs58checkModule from 'bs58check';
+// bs58check v4 nests encode/decode under .default in CJS/bundler contexts
+const bs58check: { encode: (payload: Uint8Array) => string } =
+  (bs58checkModule as any).default ?? bs58checkModule;
 
 interface UTXO {
   tx_hash: string;

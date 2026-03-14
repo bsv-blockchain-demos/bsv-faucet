@@ -52,9 +52,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ txid });
   } catch (error) {
-    console.error('Error sending transaction:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error sending transaction:', message, error);
     return NextResponse.json(
-      { error: 'Error sending transaction' },
+      { error: message },
       { status: 500 }
     );
   }
