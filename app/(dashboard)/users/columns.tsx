@@ -92,7 +92,7 @@ export const columns: ColumnDef<User>[] = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => row.original.withdrawn.toString()
+    cell: ({ row }) => Number(row.original.withdrawn).toLocaleString()
   },
   {
     accessorKey: 'paused',

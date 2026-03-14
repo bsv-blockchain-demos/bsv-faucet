@@ -61,7 +61,7 @@ const LatestTransactionsTableRow = ({
         )}
       </TableCell>
       <TableCell>{transaction.txType}</TableCell>
-      <TableCell>{transaction.amount.toString()}</TableCell>
+      <TableCell>{Number(transaction.amount).toLocaleString()}</TableCell>
     </TableRow>
   );
 };

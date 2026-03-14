@@ -128,7 +128,7 @@ export default function DashboardPage() {
       parseInt(amount) <= 0 ||
       parseInt(amount) > MAX_DAILY_WITHDRAWAL
     )
-      return `Invalid amount (max ${MAX_DAILY_WITHDRAWAL} satoshis)`;
+      return `Invalid amount (max ${MAX_DAILY_WITHDRAWAL.toLocaleString()} satoshis)`;
     // if (!captchaValue) return 'Please complete the captcha';
     if (remainingTime > 0)
       return 'Please wait for the cooldown period to end for this address';
@@ -171,7 +171,7 @@ export default function DashboardPage() {
       const { txid, remainingTime: newRemainingTime } = await response.json();
 
       setSuccess(
-        `Successfully sent ${amount} satoshis to ${address}. TxID: ${txid}`
+        `Successfully sent ${Number(amount).toLocaleString()} satoshis to ${address}. TxID: ${txid}`
       );
 
       setRemainingTime(newRemainingTime);
@@ -223,7 +223,7 @@ export default function DashboardPage() {
             {isLoading ? (
               <Skeleton className="h-6 w-24" />
             ) : (
-              <span className="font-bold">{faucetBalance} satoshis</span>
+              <span className="font-bold">{faucetBalance?.toLocaleString()} satoshis</span>
             )}
           </div>
 
@@ -235,7 +235,7 @@ export default function DashboardPage() {
             />
             <Input
               type="number"
-              placeholder={`Amount (in satoshis, max ${MAX_DAILY_WITHDRAWAL})`}
+              placeholder={`Amount (in satoshis, max ${MAX_DAILY_WITHDRAWAL.toLocaleString()})`}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               max={MAX_DAILY_WITHDRAWAL.toString()}
@@ -325,7 +325,7 @@ export default function DashboardPage() {
                     <TableCell>
                       {new Date(tx.date).toLocaleDateString()}
                     </TableCell>
-                    <TableCell>{tx.amount}</TableCell>
+                    <TableCell>{Number(tx.amount).toLocaleString()}</TableCell>
                     <TableCell>{tx.txType}</TableCell>
                     <TableCell>
                       <a
