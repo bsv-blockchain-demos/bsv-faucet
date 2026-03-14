@@ -180,12 +180,7 @@ export const createAndSendTransaction = async (
     }
 
     const tx = new Transaction(1, inputs, outputs);
-
-    for (let i = 0; i < tx.inputs.length; i++) {
-      const input = tx.inputs[i];
-      const p2pkhUnlock = new P2PKH().unlock(privateKey);
-      input.unlockingScript = await p2pkhUnlock.sign(tx, i);
-    }
+    await tx.sign();
 
     const rawTx = tx.toHex();
     const txid = await broadcastTransaction(rawTx);
