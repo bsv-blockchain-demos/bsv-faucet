@@ -1,4 +1,4 @@
-import { User, TransactionWithUser } from '@/lib/prisma';
+import { ClientUser, ClientTransaction } from '@/lib/prisma';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -7,8 +7,8 @@ const LatestTransactionsTableRow = ({
   transaction,
   showBeef = true
 }: {
-  user: User;
-  transaction: TransactionWithUser;
+  user: ClientUser;
+  transaction: ClientTransaction;
   showBeef?: boolean;
 }) => {
   const isDeposit = transaction.txType === 'deposit';
@@ -26,7 +26,7 @@ const LatestTransactionsTableRow = ({
         </a>
       </TableCell>
       <TableCell suppressHydrationWarning>
-        {transaction.date.toLocaleString()}
+        {new Date(transaction.date).toLocaleString()}
       </TableCell>
       {user.role === 'admin' && (
         <TableCell>
@@ -61,7 +61,7 @@ const LatestTransactionsTableRow = ({
         )}
       </TableCell>
       <TableCell>{transaction.txType}</TableCell>
-      <TableCell>{Number(transaction.amount).toLocaleString()}</TableCell>
+      <TableCell>{transaction.amount.toLocaleString()}</TableCell>
     </TableRow>
   );
 };

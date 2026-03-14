@@ -45,6 +45,45 @@ export const fetchTransactions = async (user: User, take?: number) => {
   });
 };
 
+export type ClientUser = Omit<User, 'withdrawn' | 'createdAt' | 'lastActive'> & {
+  withdrawn: number;
+  createdAt: string;
+  lastActive: string;
+};
+
+export type ClientTransaction = Omit<Transaction, 'amount' | 'date'> & {
+  amount: number;
+  date: string;
+  user: ClientUser | null;
+};
+
+export function serializeUser(user: User): ClientUser {
+  return {
+    ...user,
+    withdrawn: Number(user.withdrawn),
+    createdAt: user.createdAt.toISOString(),
+    lastActive: user.lastActive.toISOString()
+  };
+}
+
+export function serializeTransactions(
+  transactions: TransactionWithUser[]
+): ClientTransaction[] {
+  return transactions.map((t) => ({
+    ...t,
+    amount: Number(t.amount),
+    date: t.date.toISOString(),
+    user: t.user
+      ? {
+          ...t.user,
+          withdrawn: Number(t.user.withdrawn),
+          createdAt: t.user.createdAt.toISOString(),
+          lastActive: t.user.lastActive.toISOString()
+        }
+      : null
+  }));
+}
+
 export const fetchUsers = async (user: User) => {
   if (user.role !== 'admin') {
     return [];

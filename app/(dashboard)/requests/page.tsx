@@ -6,7 +6,12 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import Toolbar from './toolbar';
-import { fetchUser, fetchTransactions } from '@/lib/prisma';
+import {
+  fetchUser,
+  fetchTransactions,
+  serializeUser,
+  serializeTransactions
+} from '@/lib/prisma';
 import LatestTransactionsTable from '../latest-transactions-table';
 import SpentStatusMonitorClient from '../SpentStatusMonitorClient';
 
@@ -24,7 +29,10 @@ export default async function RequestsPage() {
       </CardHeader>
       <CardContent>
         <Toolbar />
-        <LatestTransactionsTable user={user} transactions={transactions} />
+        <LatestTransactionsTable
+          user={serializeUser(user)}
+          transactions={serializeTransactions(transactions)}
+        />
         <SpentStatusMonitorClient />
       </CardContent>
     </Card>
