@@ -47,10 +47,10 @@ export default function AdminTreasury() {
 
   const fetchBalance = async () => {
     const balanceResponse = await fetch('/api/wallet/balance');
-    if (!balanceResponse.ok) {
-      throw new Error('Failed to fetch balance');
-    }
     const balanceData = await balanceResponse.json();
+    if (!balanceResponse.ok) {
+      throw new Error(balanceData?.error || 'Failed to fetch balance');
+    }
     return balanceData.balance;
   };
 

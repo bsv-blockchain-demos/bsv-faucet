@@ -64,6 +64,8 @@ export default function DashboardPage() {
   const adminWalletAddress = AdminWalletAddress();
 
   useEffect(() => {
+    if (!user?.id) return;
+
     const fetchData = async () => {
       setIsLoading(true);
       try {
@@ -71,29 +73,29 @@ export default function DashboardPage() {
           await Promise.all([
             fetch('/api/wallet/balance'),
             fetch(`/api/transactions/users`),
-            fetch(`/api/users/remaining-time?userId=${user?.id}`)
+            fetch(`/api/users/remaining-time?userId=${user.id}`)
           ]);
-        if (
-          !balanceResponse.ok ||
-          !transactionsResponse.ok ||
-          !remainingTimeResponse.ok
-        ) {
-          throw new Error('Failed to fetch data');
+        const balanceData = await balanceResponse.json();
+        const transactionsData = transactionsResponse.ok ? await transactionsResponse.json() : [];
+        const remainingData = remainingTimeResponse.ok ? await remainingTimeResponse.json() : {};
+
+        if (!balanceResponse.ok) {
+          toast({
+            title: 'Balance Unavailable',
+            description: balanceData?.error || 'Unable to fetch wallet balance. The blockchain provider may be temporarily down.',
+            variant: 'destructive'
+          });
         }
 
-        const balanceData = await balanceResponse.json();
-        const transactionsData = await transactionsResponse.json();
-        const { remainingTime, totalAmountWithdrawn, message } =
-          await remainingTimeResponse.json();
-        setFaucetBalance(balanceData.balance);
+        setFaucetBalance(balanceData.balance ?? 0);
         setTransactions(transactionsData);
-        setRemainingTime(remainingTime);
-        setTotalWithdrawn(totalAmountWithdrawn)
+        setRemainingTime(remainingData.remainingTime ?? 0);
+        setTotalWithdrawn(remainingData.totalAmountWithdrawn ?? 0);
       } catch (error) {
         console.error('Error fetching data:', error);
         toast({
           title: 'Error',
-          description: 'Failed to load faucet data',
+          description: 'Failed to load faucet data. Please try again later.',
           variant: 'destructive'
         });
       } finally {
@@ -105,7 +107,7 @@ export default function DashboardPage() {
     const intervalId = setInterval(fetchData, 60000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     if (remainingTime <= 0) return;

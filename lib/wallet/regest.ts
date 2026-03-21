@@ -8,7 +8,7 @@ const API_URLS = {
 export const getUTXOs = async (address: string, network: 'testnet' | 'mainnet' = 'testnet') => {
   const apiUrl = API_URLS[network];
   try {
-    const response = await axios.get(`${apiUrl}/address/${address}/unspent`);
+    const response = await axios.get(`${apiUrl}/address/${address}/unspent`, { timeout: 10000 });
     return response.data;
   } catch (error) {
     throw new Error(`Error fetching UTXOs: ${error}`);
@@ -18,7 +18,7 @@ export const getUTXOs = async (address: string, network: 'testnet' | 'mainnet' =
 export const broadcastTransaction = async (rawTx: string, network: 'testnet' | 'mainnet' = 'testnet') => {
   const apiUrl = API_URLS[network];
   try {
-    const response = await axios.post(`${apiUrl}/tx/raw`, { txhex: rawTx });
+    const response = await axios.post(`${apiUrl}/tx/raw`, { txhex: rawTx }, { timeout: 10000 });
     return response.data;
   } catch (error) {
     throw new Error(`Error broadcasting transaction: ${error}`);
@@ -28,7 +28,7 @@ export const broadcastTransaction = async (rawTx: string, network: 'testnet' | '
 export const getRawTransaction = async (tx_hash: string, network: 'testnet' | 'mainnet' = 'testnet') => {
   const apiUrl = API_URLS[network];
   try {
-    const response = await axios.get(`${apiUrl}/tx/${tx_hash}/hex`);
+    const response = await axios.get(`${apiUrl}/tx/${tx_hash}/hex`, { timeout: 10000 });
     return response.data;
   } catch (error) {
     throw new Error(`Error fetching raw transaction: ${error}`);

@@ -25,10 +25,13 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ balance });
   } catch (error) {
-    console.error(error);  // Logging for better debugging
+    console.error(error);
+    const message = error instanceof Error && error.message.includes('Error fetching UTXOs')
+      ? 'The blockchain provider (WhatsOnChain) is currently unavailable. Please try again later.'
+      : 'Error fetching balance';
     return NextResponse.json(
-      { error: 'Error fetching balance' },
-      { status: 500 }
+      { error: message },
+      { status: 503 }
     );
   }
 }
