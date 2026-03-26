@@ -9,7 +9,7 @@ export const getUTXOs = async (address: string, network: 'testnet' | 'mainnet' =
   const apiUrl = API_URLS[network];
   try {
     const response = await axios.get(`${apiUrl}/address/${address}/unspent/all`, { timeout: 10000 });
-    return response.data;
+    return response.data.result;
   } catch (error) {
     throw new Error(`Error fetching UTXOs: ${error}`);
   }
