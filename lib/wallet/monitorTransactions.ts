@@ -1,5 +1,5 @@
-// Guard: this module reads the treasury WIF. Importing it from a client
-// component is a build-time error, preventing the key from reaching the browser.
+// Server-only: this module reads the treasury WIF. The server-only import makes
+// a client import a build-time error.
 import 'server-only';
 import cron from 'node-cron';
 import { getUTXOs, getRawTransaction } from './regest';

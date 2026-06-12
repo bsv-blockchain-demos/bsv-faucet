@@ -14,7 +14,7 @@ declare global {
       readonly POSTGRES_DATABASE: string;
       readonly CLERK_SECRET_KEY: string;
       readonly WEBHOOK_SECRET: string;
-      // Treasury wallet private key (WIF). Server-only, never prefix with NEXT_PUBLIC_.
+      // Treasury wallet private key (WIF). Server-only.
       readonly TREASURY_WALLET_WIF: string;
       // public
       readonly NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: string;

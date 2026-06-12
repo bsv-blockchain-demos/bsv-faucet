@@ -14,8 +14,7 @@ export async function POST(req: Request) {
     );
   }
 
-  // The treasury WIF is read server-side only. It must never be sent by the
-  // client or exposed via a NEXT_PUBLIC_ env var.
+  // The treasury WIF is read server-side only and is never sent by the client.
   const wif = process.env.TREASURY_WALLET_WIF;
   if (!wif) {
     return NextResponse.json(

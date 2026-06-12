@@ -2,8 +2,7 @@ import { PrivateKey } from '@bsv/sdk';
 import { NextResponse } from 'next/server';
 
 // Returns only the treasury wallet's public testnet address.
-// The WIF stays server-side; deriving the address here keeps the private key
-// out of the client bundle (it must never be a NEXT_PUBLIC_ var).
+// The WIF stays server-side; only the derived address is returned.
 export async function GET() {
   const treasuryWIF = process.env.TREASURY_WALLET_WIF;
   if (!treasuryWIF) {

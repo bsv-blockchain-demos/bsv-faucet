@@ -68,7 +68,7 @@ All variables are currently scoped to All Environments. During the validation wi
 | `WEBHOOK_SECRET` | dev signing secret | prod signing secret | Differs per environment; rotate, see below |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | `/sign-in` | `/sign-in` | Relative, same everywhere |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | `/sign-up` | `/sign-up` | Relative, same everywhere |
-| `TREASURY_WALLET_WIF` | new server-only key | new server-only key | Server-only, never prefix with NEXT_PUBLIC_ |
+| `TREASURY_WALLET_WIF` | server-only | server-only | Same value in both; server-only |
 | `POSTGRES_*` | prod database | prod or branch database | `POSTGRES_PASSWORD` rotate, see below |
 | `NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL` | same | same | Public config |
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | same | same | Public by design |

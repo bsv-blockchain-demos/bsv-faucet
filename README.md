@@ -70,7 +70,7 @@ vercel env pull
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key |
 | `CLERK_SECRET_KEY` | Clerk secret key |
 | `WEBHOOK_SECRET` | Clerk webhook secret for user sync |
-| `TREASURY_WALLET_WIF` | WIF private key for the testnet treasury wallet (server-only, never prefix with `NEXT_PUBLIC_`) |
+| `TREASURY_WALLET_WIF` | WIF private key for the testnet treasury wallet (server-only) |
 | `NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL` | Max satoshis a user can withdraw per day (e.g. `10000000`) |
 
 #### Optional variables
