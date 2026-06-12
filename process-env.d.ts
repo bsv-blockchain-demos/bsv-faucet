@@ -13,13 +13,16 @@ declare global {
       readonly POSTGRES_PASSWORD: string;
       readonly POSTGRES_DATABASE: string;
       readonly CLERK_SECRET_KEY: string;
-      readonly NEXT_PUBLIC_TREASURY_WALLET_WIF: string;
+      readonly WEBHOOK_SECRET: string;
+      // Treasury wallet private key (WIF). Server-only, never prefix with NEXT_PUBLIC_.
+      readonly TREASURY_WALLET_WIF: string;
       // public
       readonly NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: string;
       readonly NEXT_PUBLIC_CLERK_SIGN_IN_URL: string;
       readonly NEXT_PUBLIC_CLERK_SIGN_UP_URL: string;
       readonly NEXT_PUBLIC_RECAPTCHA_SITE_KEY: string;
-      readonly NEXT_PUBLIC_RECAPTCHA_SITE_KEY: string;
+      readonly NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL: string;
+      readonly NEXT_PUBLIC_DEPOSIT_HISTORY_URL: string;
     }
   }
 }

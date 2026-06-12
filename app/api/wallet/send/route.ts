@@ -5,14 +5,25 @@ import { error } from 'console';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
-  const { wif, toAddress, amount } = await req.json();
+  const { toAddress, amount } = await req.json();
 
-  if (!wif || !toAddress || !amount) {
+  if (!toAddress || !amount) {
     return NextResponse.json(
-      { error: 'wif, toAddress, and amount are required' },
+      { error: 'toAddress and amount are required' },
       { status: 400 }
     );
   }
+
+  // The treasury WIF is read server-side only. It must never be sent by the
+  // client or exposed via a NEXT_PUBLIC_ env var.
+  const wif = process.env.TREASURY_WALLET_WIF;
+  if (!wif) {
+    return NextResponse.json(
+      { error: 'Treasury wallet is not configured' },
+      { status: 500 }
+    );
+  }
+
   const user = await currentUser();
   const userId = user?.id;
 

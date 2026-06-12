@@ -1,3 +1,7 @@
+// Guard: this module handles the treasury WIF and signing. Importing it from a
+// client component is a build-time error, preventing the key from ever being
+// inlined into client JS.
+import 'server-only';
 import {
   PrivateKey,
   P2PKH,

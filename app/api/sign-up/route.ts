@@ -10,8 +10,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(url);
   }
   try {
-    await prisma.user.create({
-      data: {
+    // Upsert so a returning user (whose row was already provisioned by the
+    // Clerk webhook or a prior sign-up redirect) is not duplicated or reset.
+    await prisma.user.upsert({
+      where: { userId: user.id },
+      update: {
+        username: user.username,
+        email: user.emailAddresses[0].emailAddress,
+        imageUrl: user.imageUrl
+      },
+      create: {
         userId: user.id,
         username: user.username,
         email: user.emailAddresses[0].emailAddress,

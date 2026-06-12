@@ -70,7 +70,7 @@ vercel env pull
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key |
 | `CLERK_SECRET_KEY` | Clerk secret key |
 | `WEBHOOK_SECRET` | Clerk webhook secret for user sync |
-| `NEXT_PUBLIC_TREASURY_WALLET_WIF` | WIF private key for the testnet treasury wallet |
+| `TREASURY_WALLET_WIF` | WIF private key for the testnet treasury wallet (server-only, never prefix with `NEXT_PUBLIC_`) |
 | `NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL` | Max satoshis a user can withdraw per day (e.g. `10000000`) |
 
 #### Optional variables
@@ -80,6 +80,7 @@ vercel env pull
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | Google ReCAPTCHA site key (currently disabled in code) |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Sign-in route (default: `/sign-in`) |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Sign-up route (default: `/sign-up`) |
+| `NEXT_PUBLIC_DEPOSIT_HISTORY_URL` | Base URL of the deposit-history service (default: `http://localhost:3001`) |
 
 ### 3. Set up the database
 

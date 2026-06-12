@@ -75,7 +75,7 @@ const main = async () => {
         },
         vout: [
           {
-            address: process.env.NEXT_PUBLIC_TREASURY_WALLET_WIF,
+            address: process.env.TREASURY_WALLET_WIF,
             satoshis: 1
           }
         ],
@@ -91,7 +91,7 @@ const main = async () => {
         },
         vout: [
           {
-            address: process.env.NEXT_PUBLIC_TREASURY_WALLET_WIF,
+            address: process.env.TREASURY_WALLET_WIF,
             satoshis: 2
           }
         ],
@@ -107,7 +107,7 @@ const main = async () => {
         },
         vout: [
           {
-            address: process.env.NEXT_PUBLIC_TREASURY_WALLET_WIF,
+            address: process.env.TREASURY_WALLET_WIF,
             satoshis: 3
           }
         ],
@@ -123,7 +123,7 @@ const main = async () => {
         },
         vout: [
           {
-            address: process.env.NEXT_PUBLIC_TREASURY_WALLET_WIF,
+            address: process.env.TREASURY_WALLET_WIF,
             satoshis: 4
           }
         ],
@@ -139,7 +139,7 @@ const main = async () => {
         },
         vout: [
           {
-            address: process.env.NEXT_PUBLIC_TREASURY_WALLET_WIF,
+            address: process.env.TREASURY_WALLET_WIF,
             satoshis: 5
           }
         ],
@@ -155,7 +155,7 @@ const main = async () => {
         },
         vout: [
           {
-            address: process.env.NEXT_PUBLIC_TREASURY_WALLET_WIF,
+            address: process.env.TREASURY_WALLET_WIF,
             satoshis: 6
           }
         ],

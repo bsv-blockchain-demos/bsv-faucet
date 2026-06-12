@@ -44,12 +44,26 @@ export async function POST(req: Request) {
   try {
     if (eventType === 'user.created') {
       const userData = data as UserJSON;
+      const username =
+        userData.username ||
+        `${userData.first_name || ''}${userData.last_name || ''}`.toLowerCase() ||
+        userData.id.slice(0, 8);
+      const email = userData.email_addresses[0]?.email_address || '';
 
-      await prisma.user.create({
-        data: {
+      // Upsert keyed on userId so a replayed event, or a user.created for an
+      // already-migrated user, refreshes only the mutable profile fields and
+      // never resets rate-limit state (role, withdrawn, paused, lastActive).
+      await prisma.user.upsert({
+        where: { userId: userData.id },
+        update: {
+          username,
+          email,
+          imageUrl: userData.image_url,
+        },
+        create: {
           userId: userData.id,
-          username: userData.username || `${userData.first_name || ''}${userData.last_name || ''}`.toLowerCase() || userData.id.slice(0, 8),
-          email: userData.email_addresses[0]?.email_address || '',
+          username,
+          email,
           imageUrl: userData.image_url,
           role: 'user',
           theme: 'light',
@@ -61,13 +75,28 @@ export async function POST(req: Request) {
     // Handle user updates
     else if (eventType === 'user.updated') {
       const userData = data as UserJSON;
+      const username =
+        userData.username ||
+        `${userData.first_name || ''}${userData.last_name || ''}`.toLowerCase();
+      const email = userData.email_addresses[0]?.email_address || '';
 
-      await prisma.user.update({
+      // Upsert so an update that arrives before the row exists does not 500
+      // and trigger an endless Svix retry loop.
+      await prisma.user.upsert({
         where: { userId: userData.id },
-        data: {
-          username: userData.username || `${userData.first_name || ''}${userData.last_name || ''}`.toLowerCase(),
-          email: userData.email_addresses[0]?.email_address || '',
+        update: {
+          username,
+          email,
           imageUrl: userData.image_url,
+        },
+        create: {
+          userId: userData.id,
+          username: username || userData.id.slice(0, 8),
+          email,
+          imageUrl: userData.image_url,
+          role: 'user',
+          theme: 'light',
+          password: 'defaultPassword123',
         },
       });
     }
@@ -76,7 +105,9 @@ export async function POST(req: Request) {
     else if (eventType === 'user.deleted') {
       const deletedUserId = data.id as string;
 
-      await prisma.user.delete({
+      // deleteMany tolerates a missing row (count 0) so a redelivered delete
+      // still returns 200 instead of throwing on a not-found record.
+      await prisma.user.deleteMany({
         where: { userId: deletedUserId },
       });
     }
