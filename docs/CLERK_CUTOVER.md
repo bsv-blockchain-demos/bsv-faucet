@@ -81,4 +81,4 @@ Vercel flagged `WEBHOOK_SECRET`, `CLERK_SECRET_KEY`, and `POSTGRES_PASSWORD` as 
 
 - `CLERK_SECRET_KEY` and `WEBHOOK_SECRET` become the production instance values, which are new by definition.
 - `POSTGRES_PASSWORD` should be rotated in Neon and updated in Vercel as good hygiene during cutover.
-- The treasury key is not rotated. Exposure was verified as not having occurred; the variable is only renamed. See `docs/TREASURY_KEY.md`.
+- The treasury key is not rotated; the variable is only renamed to `TREASURY_WALLET_WIF` (same value).

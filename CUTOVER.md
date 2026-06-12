@@ -2,8 +2,8 @@
 
 Execution-order checklist for moving the BSV Faucet from the Clerk development
 instance to the production instance. The live site keeps running on dev Clerk
-keys until the final swap in Phase 4. Supporting detail: `docs/TREASURY_KEY.md`,
-`docs/CLERK_CUTOVER.md`, `migration/README.md`, and `PREVIEW_VALIDATION.md`.
+keys until the final swap in Phase 4. Supporting detail: `docs/CLERK_CUTOVER.md`,
+`migration/README.md`, and `PREVIEW_VALIDATION.md`.
 
 Migration strategy is Option B (database ID remap). The treasury WIF is renamed,
 not rotated.
@@ -15,10 +15,9 @@ idempotent Clerk webhook at `/api/webhooks/clerk`, idempotent sign-up route,
 deposit history served directly from `lib/depositHistory.ts`, and the remap and
 mapping scripts under `scripts/`.
 
-## Phase 2: Treasury key variable rename
+## Phase 2: Rename the treasury variable (independent of Clerk)
 
-Exposure was verified as not having occurred, so the key is not rotated and the
-wallet is not swept. Rename only, same value. See `docs/TREASURY_KEY.md`.
+Rename only, same value, no fund movement.
 
 - [ ] Add `TREASURY_WALLET_WIF` (server-only, no prefix) in Vercel with the same
       WIF value the old variable held.
