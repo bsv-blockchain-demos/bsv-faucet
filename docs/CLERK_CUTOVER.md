@@ -32,11 +32,11 @@ The script verifies after commit that the total user count is unchanged, that no
 
 ## Webhook re-registration
 
-The webhook handler is at `app/api/webhook/route.ts`. It verifies the svix signature using `WEBHOOK_SECRET` and handles `user.created`, `user.updated`, and `user.deleted`. The handler is now idempotent: `user.created` upserts on `userId` and refreshes only profile fields, so a replayed event or a `user.created` for an already-migrated user never resets `role`, `withdrawn`, `paused`, or `lastActive`. `user.deleted` tolerates a missing row.
+The webhook handler is at `app/api/webhooks/clerk/route.ts` (served at `/api/webhooks/clerk`). It verifies the svix signature using `WEBHOOK_SECRET` and handles `user.created`, `user.updated`, and `user.deleted`. The handler is now idempotent: `user.created` upserts on `userId` and refreshes only profile fields, so a replayed event or a `user.created` for an already-migrated user never resets `role`, `withdrawn`, `paused`, or `lastActive`. `user.deleted` tolerates a missing row.
 
 At cutover:
 
-1. In the production Clerk instance, go to Configure then Webhooks and register the same endpoint URL that points at `/api/webhook`.
+1. In the production Clerk instance, go to Configure then Webhooks and register the endpoint URL that points at `/api/webhooks/clerk` (for example `https://bsvfaucet.com/api/webhooks/clerk`).
 
 2. Subscribe to the same three events: `user.created`, `user.updated`, `user.deleted`.
 
