@@ -1,6 +1,6 @@
 # Production Cutover Checklist
 
-This is the execution-order checklist for taking the BSV Faucet from Clerk development keys to the production Clerk instance, and for renaming the treasury key variable. The supporting detail lives in `docs/TREASURY_KEY.md` and `docs/CLERK_CUTOVER.md`.
+This is the execution-order checklist for taking the BSV Faucet from Clerk development keys to the production Clerk instance, and for renaming the key variable. The supporting detail lives in `docs/TREASURY_KEY.md` and `docs/CLERK_CUTOVER.md`.
 
 The live site must keep working on dev Clerk keys until the final swap. Do not change Production Clerk keys until the steps that explicitly say so.
 
@@ -10,13 +10,11 @@ The live site must keep working on dev Clerk keys until the final swap. Do not c
 - [ ] Production Clerk instance exists and the `bsvfaucet.com` Clerk DNS records have verified.
 - [ ] You have the Clerk import mapping CSV (old dev ID to new prod ID) ready, or know how to produce it.
 
-## Phase 1: Rename the treasury key variable (can happen first, independent of Clerk)
+## Phase 1: Rename the variable (can happen first, independent of Clerk)
 
-Exposure was verified as not having occurred, so the key is not rotated and the wallet is not swept. This is a rename only, same value. See `docs/TREASURY_KEY.md`.
+This is a rename only, same value. See `docs/TREASURY_KEY.md`.
 
 - [ ] Add `TREASURY_WALLET_WIF` (server-only, no prefix) to Vercel with the same WIF value the old variable held.
-- [ ] Remove `NEXT_PUBLIC_TREASURY_WALLET_WIF` from Vercel.
-- [ ] Redeploy and verify treasury-address, balance, and a test withdrawal with no `wif` in the payload.
 
 ## Phase 2: Prepare Preview to validate against prod Clerk
 
