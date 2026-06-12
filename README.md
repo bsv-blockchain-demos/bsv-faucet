@@ -128,9 +128,9 @@ app/
     users/              # Admin user management table
     wallet/             # Wallet page
   api/
-    wallet/             # Wallet API routes (balance, send, monitor, generate)
+    wallet/             # Wallet API routes (balance, send, monitor, generate, treasury-address)
     transactions/       # Transaction API routes
-    webhook/            # Clerk webhook handler
+    webhooks/clerk/     # Clerk webhook handler
 components/
   adminTreasuryHistory/ # Admin treasury balance and deposit history
   ui/                   # shadcn/ui components
@@ -138,11 +138,14 @@ context/
   ThemeContext.tsx       # Dark/light mode provider
 lib/
   wallet/               # BSV wallet logic (transactions, monitoring, generation)
+  depositHistory.ts     # Deposit history data source
   prisma.ts             # Prisma client and data fetching helpers
   utils.ts              # Shared utilities
 prisma/
   schema.prisma         # Database schema
   migrations/           # Migration files
+scripts/                # One-off ops scripts (Clerk id remap, id mapping)
+migration/              # Clerk dev-to-prod user migration tooling and runbook
 ```
 
 ## Database Schema
@@ -173,6 +176,18 @@ pnpm prisma:migrate:dev
 You'll be prompted for a migration name. The migration runs against your local database immediately. Commit the generated migration file in your PR.
 
 See [Prisma team development workflow](https://www.prisma.io/docs/orm/prisma-migrate/workflows/team-development) for details.
+
+## Clerk dev-to-prod migration
+
+Moving from the Clerk development instance to production is documented end to end:
+
+- `migration/README.md` — import dev users into the production Clerk instance
+- `PREVIEW_VALIDATION.md` — validate the prod stack on a Vercel Preview deployment
+- `docs/CLERK_CUTOVER.md` — env scoping, webhook, and the user-id remap procedure
+- `CUTOVER.md` — the ordered cutover checklist with rollback
+
+The webhook handler lives at `/api/webhooks/clerk`. The user-id remap and id-mapping
+scripts are under `scripts/`.
 
 ## Contributing
 
