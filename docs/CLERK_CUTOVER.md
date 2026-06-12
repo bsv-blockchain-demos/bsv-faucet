@@ -32,11 +32,11 @@ The script verifies after commit that the total user count is unchanged, that no
 
 ## Webhook re-registration
 
-The webhook handler is at `app/api/webhook/route.ts`. It verifies the svix signature using `WEBHOOK_SECRET` and handles `user.created`, `user.updated`, and `user.deleted`. The handler is now idempotent: `user.created` upserts on `userId` and refreshes only profile fields, so a replayed event or a `user.created` for an already-migrated user never resets `role`, `withdrawn`, `paused`, or `lastActive`. `user.deleted` tolerates a missing row.
+The webhook handler is at `app/api/webhooks/clerk/route.ts` (served at `/api/webhooks/clerk`). It verifies the svix signature using `WEBHOOK_SECRET` and handles `user.created`, `user.updated`, and `user.deleted`. The handler is now idempotent: `user.created` upserts on `userId` and refreshes only profile fields, so a replayed event or a `user.created` for an already-migrated user never resets `role`, `withdrawn`, `paused`, or `lastActive`. `user.deleted` tolerates a missing row.
 
 At cutover:
 
-1. In the production Clerk instance, go to Configure then Webhooks and register the same endpoint URL that points at `/api/webhook`.
+1. In the production Clerk instance, go to Configure then Webhooks and register the endpoint URL that points at `/api/webhooks/clerk` (for example `https://bsvfaucet.com/api/webhooks/clerk`).
 
 2. Subscribe to the same three events: `user.created`, `user.updated`, `user.deleted`.
 
@@ -44,7 +44,7 @@ At cutover:
 
 ## Hardcoded keys and URLs
 
-A repo scan found no hardcoded `pk_test`, `sk_test`, `accounts.dev`, or Clerk frontend API URLs. All Clerk configuration comes from environment variables. The sign-in and sign-up URLs are relative paths (`/sign-in`, `/sign-up`) and work unchanged under production keys. One unrelated hardcoded URL (the deposit-history service) was moved to `NEXT_PUBLIC_DEPOSIT_HISTORY_URL`.
+A repo scan found no hardcoded `pk_test`, `sk_test`, `accounts.dev`, or Clerk frontend API URLs. All Clerk configuration comes from environment variables. The sign-in and sign-up URLs are relative paths (`/sign-in`, `/sign-up`) and work unchanged under production keys. One unrelated hardcoded URL (a `http://localhost:3001` self-fetch in the admin deposit-history panel) was removed: the deposit-history data now comes from `lib/depositHistory.ts` directly, so no env var is needed.
 
 ## Environment variable scoping
 
@@ -61,7 +61,6 @@ All variables are currently scoped to All Environments. During the validation wi
 | `POSTGRES_*` | prod database | prod or branch database | `POSTGRES_PASSWORD` rotate, see below |
 | `NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL` | same | same | Public config |
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | same | same | Public by design |
-| `NEXT_PUBLIC_DEPOSIT_HISTORY_URL` | prod service URL | prod or staging URL | Public config |
 
 At the final cutover, switch Production `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, and `WEBHOOK_SECRET` to the production values and redeploy.
 

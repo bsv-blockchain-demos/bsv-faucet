@@ -22,7 +22,6 @@ declare global {
       readonly NEXT_PUBLIC_CLERK_SIGN_UP_URL: string;
       readonly NEXT_PUBLIC_RECAPTCHA_SITE_KEY: string;
       readonly NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL: string;
-      readonly NEXT_PUBLIC_DEPOSIT_HISTORY_URL: string;
     }
   }
 }
