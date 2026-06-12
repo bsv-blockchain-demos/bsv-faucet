@@ -29,7 +29,6 @@ import {
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AdminWalletAddress } from '@/lib/utils';
 
 interface Transaction {
   id: number;
@@ -59,9 +58,19 @@ export default function DashboardPage() {
   const MAX_DAILY_WITHDRAWAL = parseInt(
     process.env.NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL || '1000000'
   );
-  const treasuryWIF = process.env.NEXT_PUBLIC_TREASURY_WALLET_WIF;
 
-  const adminWalletAddress = AdminWalletAddress();
+  const [adminWalletAddress, setAdminWalletAddress] = useState('');
+
+  // The treasury WIF is server-only. Fetch the derived public address instead
+  // of deriving it on the client.
+  useEffect(() => {
+    fetch('/api/wallet/treasury-address')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.address) setAdminWalletAddress(data.address);
+      })
+      .catch((err) => console.error('Error fetching treasury address:', err));
+  }, []);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -159,8 +168,7 @@ export default function DashboardPage() {
         },
         body: JSON.stringify({
           toAddress: address,
-          amount: amountInSatoshis,
-          wif: treasuryWIF
+          amount: amountInSatoshis
         })
       });
 

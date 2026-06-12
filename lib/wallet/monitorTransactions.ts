@@ -1,3 +1,6 @@
+// Guard: this module reads the treasury WIF. Importing it from a client
+// component is a build-time error, preventing the key from reaching the browser.
+import 'server-only';
 import cron from 'node-cron';
 import { getUTXOs, getRawTransaction } from './regest';
 import { PrivateKey, Transaction, P2PKH, LockingScript } from '@bsv/sdk';
@@ -69,7 +72,7 @@ function mapOutputsToJson(outputs: any[]) {
 }
 
 const startTransactionMonitor = async () => {
-  const treasuryWIF = process.env.NEXT_PUBLIC_TREASURY_WALLET_WIF as string;
+  const treasuryWIF = process.env.TREASURY_WALLET_WIF as string;
   const privateKey = PrivateKey.fromWif(treasuryWIF);
   const treasuryAddress = privateKey.toAddress('testnet').toString();
 
