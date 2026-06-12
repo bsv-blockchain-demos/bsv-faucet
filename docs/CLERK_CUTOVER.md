@@ -10,25 +10,36 @@ The Clerk application was moved into the BSV Blockchain workspace and a producti
 
 ## User ID remap (Option B)
 
-The remap script is `scripts/remap-clerk-user-ids.ts`. It takes a mapping CSV of `old_user_id,new_user_id` produced by the Clerk import, runs dry-run by default, and only writes with `--commit`. Because the foreign key cascades on update, it only updates `User.userId` and the related `Transaction` rows follow automatically.
+The remap script is `scripts/remap-clerk-user-ids.ts`. It takes a mapping CSV of `old_user_id,new_user_id`, runs dry-run by default, and only writes with `--commit`. Because the foreign key cascades on update, it only updates `User.userId` and the related `Transaction` rows follow automatically.
 
 Run order:
 
-1. Produce the mapping CSV from the Clerk import (old dev ID in column one, new prod ID in column two). A header row is optional.
+1. Produce the mapping CSV by joining the dev and prod Clerk exports with `scripts/generate-id-mapping.ts` (see `migration/README.md`). Review its reconciliation summary and resolve every unmatched row before continuing.
 
 2. Dry-run against the target database to review the plan and row counts:
 
    ```
-   dotenvx run -f .env.local -- npx tsx scripts/remap-clerk-user-ids.ts mapping.csv
+   dotenvx run -f .env.local -- npx tsx scripts/remap-clerk-user-ids.ts migration/exports/id-mapping.csv
    ```
 
 3. Commit once the plan looks correct:
 
    ```
-   dotenvx run -f .env.local -- npx tsx scripts/remap-clerk-user-ids.ts mapping.csv --commit
+   dotenvx run -f .env.local -- npx tsx scripts/remap-clerk-user-ids.ts migration/exports/id-mapping.csv --commit
    ```
 
 The script verifies after commit that the total user count is unchanged, that no old ID remains on `User`, and that no `Transaction` still references an old ID. It is idempotent: rows already migrated match nothing and are skipped, so re-running is safe. It aborts if a target new ID already belongs to a different existing user.
+
+### CASCADE pre-flight
+
+Before doing anything, the script asserts that the target database's `Transaction_userId_fkey` foreign key is ON UPDATE CASCADE (it queries `pg_constraint` and refuses to run unless `confupdtype = 'c'`). The Prisma schema declares the cascade, but the live database is proven to agree before any update is attempted. If the constraint is missing or not cascade, the script aborts with an explanation.
+
+### Dry-run against a safe copy
+
+Do not dry-run against live production. Take a copy first:
+
+- If the database is on Neon, create a branch from production (Neon branches are copy-on-write and instant). Point a local `.env.local` `POSTGRES_*` at the branch connection string.
+- Run the dry-run command above against that copy. It writes nothing and prints: planned user and cascading transaction rows per mapping entry, already-migrated no-ops, mapping old IDs not present in the DB, and DB users not covered by the mapping. Reconcile each category before the real `--commit` at cutover.
 
 ## Webhook re-registration
 

@@ -85,6 +85,34 @@ function assertNoDuplicates(mappings: Mapping[]): void {
   }
 }
 
+// Pre-flight: prove the TARGET database actually has ON UPDATE CASCADE on the
+// Transaction -> User foreign key. The whole remap relies on updating User.userId
+// and letting the cascade rewrite Transaction.userId. The Prisma schema declares
+// the cascade, but a live database could have drifted, so verify it directly.
+async function assertCascadeFk() {
+  const rows = await prisma.$queryRaw<Array<{ confupdtype: string }>>`
+    SELECT confupdtype::text AS confupdtype
+    FROM pg_constraint
+    WHERE conname = 'Transaction_userId_fkey'
+  `;
+  if (rows.length === 0) {
+    console.error(
+      'Aborting: foreign key "Transaction_userId_fkey" not found in the target database. ' +
+        'Cannot guarantee Transaction.userId will follow the User.userId update.'
+    );
+    process.exit(1);
+  }
+  // confupdtype: 'c' = CASCADE, 'a' = NO ACTION, 'r' = RESTRICT, 'n' = SET NULL, 'd' = SET DEFAULT.
+  if (rows[0].confupdtype !== 'c') {
+    console.error(
+      `Aborting: Transaction_userId_fkey ON UPDATE action is '${rows[0].confupdtype}', not CASCADE ('c'). ` +
+        'Remapping User.userId would orphan or null Transaction.userId. Fix the FK before running.'
+    );
+    process.exit(1);
+  }
+  console.log('Pre-flight: Transaction_userId_fkey ON UPDATE CASCADE confirmed.\n');
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const commit = args.includes('--commit');
@@ -104,8 +132,11 @@ async function main() {
   console.log(`Mode: ${commit ? 'COMMIT (will write)' : 'DRY-RUN (no writes)'}`);
   console.log(`Mapping rows: ${mappings.length}\n`);
 
+  await assertCascadeFk();
+
   const oldIds = mappings.map((m) => m.oldId);
   const newIds = mappings.map((m) => m.newId);
+  const oldIdSet = new Set(oldIds);
   const newIdSet = new Set(newIds);
 
   // Collision guard: a target new ID that already belongs to a different user
@@ -167,9 +198,22 @@ async function main() {
   console.log(`  Already migrated (no-op):   ${alreadyMigrated.length}`);
   console.log(`  Old ID not found (skipped): ${missing.length}`);
   if (missing.length > 0) {
+    console.log('  Mapping old IDs not present in DB:');
     console.log('    ' + missing.join('\n    '));
   }
   console.log(`  Total users before:         ${userCountBefore}`);
+
+  // Reverse check: DB users the mapping does not cover (neither an old ID to
+  // remap nor an already-migrated new ID). These rows are left untouched; the
+  // human should confirm each is expected (seed/admin/test accounts).
+  const allDbUsers = await prisma.user.findMany({ select: { userId: true } });
+  const dbNotInMapping = allDbUsers
+    .map((u) => u.userId)
+    .filter((id) => !oldIdSet.has(id) && !newIdSet.has(id));
+  console.log(`  DB users not in mapping:    ${dbNotInMapping.length}`);
+  if (dbNotInMapping.length > 0) {
+    console.log('    ' + dbNotInMapping.join('\n    '));
+  }
 
   if (!commit) {
     console.log('\nDry-run complete. No changes written. Re-run with --commit to apply.');
