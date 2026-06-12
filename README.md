@@ -80,7 +80,6 @@ vercel env pull
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | Google ReCAPTCHA site key (currently disabled in code) |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Sign-in route (default: `/sign-in`) |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Sign-up route (default: `/sign-up`) |
-| `NEXT_PUBLIC_DEPOSIT_HISTORY_URL` | Base URL of the deposit-history service (default: `http://localhost:3001`) |
 
 ### 3. Set up the database
 

@@ -3,18 +3,9 @@ import { format } from 'date-fns'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Skeleton } from '@/components/ui/skeleton'
-import { DepositTransaction } from 'app/api/deposit-history/route'
+import { DepositTransaction, getDepositHistory } from '@/lib/depositHistory'
 import { Alert, AlertTitle, AlertDescription } from './ui/alert'
 import { FileWarningIcon, RefreshCcwIcon } from 'lucide-react'
-
-async function getDepositHistory(): Promise<DepositTransaction[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_DEPOSIT_HISTORY_URL ?? 'http://localhost:3001'
-  const res = await fetch(`${baseUrl}/api/deposit-history`, { cache: 'no-store' })
-  if (!res.ok) {
-    throw new Error('Failed to fetch deposit history')
-  }
-  return res.json()
-}
 
 function DepositHistoryTable({ depositHistory }: { depositHistory: DepositTransaction[] }) {
   return (

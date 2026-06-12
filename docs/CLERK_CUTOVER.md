@@ -44,7 +44,7 @@ At cutover:
 
 ## Hardcoded keys and URLs
 
-A repo scan found no hardcoded `pk_test`, `sk_test`, `accounts.dev`, or Clerk frontend API URLs. All Clerk configuration comes from environment variables. The sign-in and sign-up URLs are relative paths (`/sign-in`, `/sign-up`) and work unchanged under production keys. One unrelated hardcoded URL (the deposit-history service) was moved to `NEXT_PUBLIC_DEPOSIT_HISTORY_URL`.
+A repo scan found no hardcoded `pk_test`, `sk_test`, `accounts.dev`, or Clerk frontend API URLs. All Clerk configuration comes from environment variables. The sign-in and sign-up URLs are relative paths (`/sign-in`, `/sign-up`) and work unchanged under production keys. One unrelated hardcoded URL (a `http://localhost:3001` self-fetch in the admin deposit-history panel) was removed: the deposit-history data now comes from `lib/depositHistory.ts` directly, so no env var is needed.
 
 ## Environment variable scoping
 
@@ -61,7 +61,6 @@ All variables are currently scoped to All Environments. During the validation wi
 | `POSTGRES_*` | prod database | prod or branch database | `POSTGRES_PASSWORD` rotate, see below |
 | `NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL` | same | same | Public config |
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | same | same | Public by design |
-| `NEXT_PUBLIC_DEPOSIT_HISTORY_URL` | prod service URL | prod or staging URL | Public config |
 
 At the final cutover, switch Production `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, and `WEBHOOK_SECRET` to the production values and redeploy.
 
