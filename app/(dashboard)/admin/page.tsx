@@ -1,12 +1,5 @@
 import AdminTreasuryHistory from '@/components/adminTreasuryHistory/AdminTreasuryHistory';
 import TreasuryDepositHistory from '@/components/adminTreasuryHistory/TreasuryDepositHistory';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
 import { fetchUser } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 
@@ -18,15 +11,18 @@ export default async function AdminPage() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Admin</CardTitle>
-        <CardDescription>Admin items.</CardDescription>
-      </CardHeader>
-      <CardContent></CardContent>
+    <div className="stagger flex flex-col gap-7">
+      <div>
+        <h1 className="font-display text-[26px] font-semibold leading-tight">
+          Admin
+        </h1>
+        <p className="mt-1.5 text-[15px] text-muted-foreground">
+          Treasury overview and deposit history.
+        </p>
+      </div>
 
       <AdminTreasuryHistory />
       <TreasuryDepositHistory />
-    </Card>
+    </div>
   );
 }

@@ -113,10 +113,10 @@ export function BsvLogo(props: React.ImgHTMLAttributes<HTMLImageElement>) {
   return (
     <img
       {...props}
-      src="/bsv-blockchain-sqaure.svg"  
-      alt="Vercel Logo"
+      src="/bsv-blockchain-logo.png"
+      alt="BSV Blockchain"
       role="img"
-      aria-label="Vercel logomark"
+      aria-label="BSV Blockchain logo"
     />
   );
 }

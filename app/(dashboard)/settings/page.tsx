@@ -115,20 +115,22 @@ export default function SettingsPage() {
 
   if (loading)
     return (
-      <div className="flex justify-center items-center h-screen">
-        Loading...
+      <div className="flex h-[60vh] items-center justify-center text-muted-foreground">
+        Loading…
       </div>
     );
   if (!userData)
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex h-[60vh] items-center justify-center text-muted-foreground">
         No user data available.
       </div>
     );
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-6">Account Settings</h1>
+    <div className="mx-auto max-w-[760px]">
+      <h1 className="mb-[22px] font-display text-[26px] font-semibold leading-tight">
+        Account settings
+      </h1>
 
       {error && (
         <Alert variant="destructive" className="mb-6">
@@ -149,7 +151,7 @@ export default function SettingsPage() {
         <TabsContent value="profile">
           <Card>
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
+              <CardTitle>Profile information</CardTitle>
               <CardDescription>
                 Update your account profile information here.
               </CardDescription>
@@ -178,7 +180,7 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button type="submit">Update Profile</Button>
+                <Button type="submit">Update profile</Button>
               </CardFooter>
             </form>
           </Card>
@@ -187,7 +189,7 @@ export default function SettingsPage() {
         <TabsContent value="security">
           <Card>
             <CardHeader>
-              <CardTitle>Change Password</CardTitle>
+              <CardTitle>Security</CardTitle>
               <CardDescription>
                 Ensure your account is using a long, random password to stay
                 secure.
@@ -196,7 +198,7 @@ export default function SettingsPage() {
             <form onSubmit={handleChangePassword}>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Label htmlFor="currentPassword">Current password</Label>
                   <Input
                     id="currentPassword"
                     name="currentPassword"
@@ -205,7 +207,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
+                  <Label htmlFor="newPassword">New password</Label>
                   <Input
                     id="newPassword"
                     name="newPassword"
@@ -215,7 +217,7 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button type="submit">Change Password</Button>
+                <Button type="submit">Update password</Button>
               </CardFooter>
             </form>
           </Card>
@@ -226,16 +228,16 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle>Appearance</CardTitle>
               <CardDescription>
-                Customize the appearance of the application.
+                Customize how the faucet looks to you.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+            <CardContent>
+              <div className="flex items-center justify-between gap-4 rounded-2xl border p-5">
                 <div className="space-y-0.5">
-                  <Label htmlFor="dark-mode">Dark Mode</Label>
+                  <Label htmlFor="dark-mode">Dark mode</Label>
                   <p className="text-sm text-muted-foreground">
                     Turn on dark mode for a comfortable viewing experience in
-                    low light environments.
+                    low light.
                   </p>
                 </div>
                 <Switch
@@ -249,22 +251,26 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="danger">
-          <Card>
+          <Card className="border-destructive">
             <CardHeader>
-              <CardTitle>Delete Account</CardTitle>
+              <CardTitle className="text-destructive">Danger zone</CardTitle>
               <CardDescription>
                 Once you delete your account, there is no going back. Please be
                 certain.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="mb-4 text-sm text-muted-foreground">
                 Deleting your account will remove all of your information from
                 our database. This cannot be undone.
               </p>
-              <Button variant="destructive" onClick={handleDeleteAccount}>
-                <Trash2 className="mr-2 h-4 w-4" /> Delete Account
-              </Button>
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                className="inline-flex h-11 items-center gap-2 rounded-full border-[1.5px] border-destructive bg-transparent px-5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+              >
+                <Trash2 className="h-4 w-4" /> Delete account
+              </button>
             </CardContent>
           </Card>
         </TabsContent>

@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button';
 import { currentUser } from '@clerk/nextjs/server';
 import Image from 'next/image';
 import {
@@ -18,26 +17,26 @@ export async function User() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          className="overflow-hidden rounded-full"
+        <button
+          type="button"
+          aria-label="Account menu"
+          className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-primary transition-colors hover:border-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <Image
             src={user?.imageUrl ?? '/placeholder-user.jpg'}
-            width={36}
-            height={36}
+            width={40}
+            height={40}
             alt="Avatar"
-            className="overflow-hidden rounded-full"
+            className="h-full w-full rounded-full object-cover"
           />
-        </Button>
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem> 
+        <DropdownMenuItem asChild>
           <Link href="/settings">Settings</Link>
-          </DropdownMenuItem>
+        </DropdownMenuItem>
         <DropdownMenuItem>Support</DropdownMenuItem>
         <DropdownMenuSeparator />
         {user ? (
@@ -45,7 +44,7 @@ export async function User() {
             <SignOutButton />
           </DropdownMenuItem>
         ) : (
-          <DropdownMenuItem>
+          <DropdownMenuItem asChild>
             <Link href="/sign-in">Sign In</Link>
           </DropdownMenuItem>
         )}

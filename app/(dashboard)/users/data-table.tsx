@@ -47,25 +47,25 @@ export function DataTable<TData, TValue>({
   });
   return (
     <div>
-      <div className="flex justify-between py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-5">
         <Input
           placeholder="Filter by email…"
           value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
             table.getColumn('email')?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="h-11 w-[320px] max-w-full rounded-xl"
         />
         <a
-          className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+          className="sbtn inline-flex h-11 items-center gap-2 rounded-full border-[1.5px] border-primary px-[18px] text-sm font-medium text-primary"
           href="/api/users/export"
         >
-          <Download className="h-4 w-4" />
+          <Download className="h-[17px] w-[17px]" />
           Export to CSV
         </a>
       </div>
-      <div className="rounded-md border">
-        <Table className="overflow-x-auto">
+      <div className="overflow-hidden rounded-2xl border">
+        <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>

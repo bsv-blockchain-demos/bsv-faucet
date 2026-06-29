@@ -1,15 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Copy, AlertCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Copy, AlertCircle, ArrowUp } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogTrigger
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,7 +44,7 @@ interface Transaction {
 }
 
 const TransactionSkeleton = () => (
-  <div className="flex items-center justify-between p-4 border rounded-lg animate-pulse">
+  <div className="flex animate-pulse items-center justify-between rounded-2xl border p-4">
     <div className="space-y-2">
       <Skeleton className="h-5 w-24" />
       <Skeleton className="h-4 w-48" />
@@ -123,10 +129,10 @@ export default function TreasuryDepositHistory() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Treasury - Deposit History</CardTitle>
+        <CardTitle>Treasury — deposit history</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {isLoading ? (
             <>
               <TransactionSkeleton />
@@ -140,16 +146,27 @@ export default function TreasuryDepositHistory() {
                 .map((tx) => (
                   <div
                     key={tx.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                    className="lift flex items-center justify-between gap-4 rounded-2xl border p-4"
                   >
-                    <div>
-                      <div className="font-medium">+ {formatAmount(tx.amount)} BSV</div>
-                      <div className="text-sm text-muted-foreground">
-                        Txid: {tx.txid.substring(0, 8)}... | Beef TX: {safelyGetNestedProp(tx, 'beefTx.txid').substring(0, 8)}...
+                    <div className="min-w-0">
+                      <div className="mb-1 flex items-center gap-2.5">
+                        <Badge variant="positive">
+                          <ArrowUp className="h-3 w-3" />
+                          Deposit
+                        </Badge>
+                        <span className="font-display text-base font-semibold">
+                          + {formatAmount(tx.amount)} BSV
+                        </span>
+                      </div>
+                      <div className="truncate font-mono text-[13px] text-muted-foreground">
+                        Txid: {tx.txid.substring(0, 8)}… | Beef Tx:{' '}
+                        {safelyGetNestedProp(tx, 'beefTx.txid').substring(0, 8)}…
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="text-sm text-muted-foreground">{formatDate(tx.date)}</div>
+                    <div className="flex shrink-0 items-center gap-4">
+                      <div className="text-[13px] text-muted-foreground">
+                        {formatDate(tx.date)}
+                      </div>
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button

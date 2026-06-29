@@ -1,10 +1,3 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
 import Toolbar from './toolbar';
 import {
   fetchUser,
@@ -22,19 +15,21 @@ export default async function RequestsPage() {
   }
   const transactions = await fetchTransactions(user);
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Requests</CardTitle>
-        <CardDescription>Requests items.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Toolbar />
-        <LatestTransactionsTable
-          user={serializeUser(user)}
-          transactions={serializeTransactions(transactions)}
-        />
-        <SpentStatusMonitorClient />
-      </CardContent>
-    </Card>
+    <section className="rounded-[20px] border bg-card p-7">
+      <div className="mb-[22px]">
+        <h1 className="font-display text-[26px] font-semibold leading-tight">
+          Requests
+        </h1>
+        <p className="mt-1.5 text-[15px] text-muted-foreground">
+          All faucet withdrawal requests.
+        </p>
+      </div>
+      <Toolbar />
+      <LatestTransactionsTable
+        user={serializeUser(user)}
+        transactions={serializeTransactions(transactions)}
+      />
+      <SpentStatusMonitorClient />
+    </section>
   );
 }

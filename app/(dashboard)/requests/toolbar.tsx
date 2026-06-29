@@ -5,22 +5,22 @@ import { Search, Download } from 'lucide-react';
 const Toolbar = () => {
   const [search, setSearch] = useState('');
   return (
-    <div className="flex justify-between items-center mb-6">
-      <div className="relative w-64">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="relative w-[320px] max-w-full">
+        <Search className="pointer-events-none absolute left-4 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search requests"
-          className="pl-10 pr-4 py-2 w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="h-11 w-full rounded-xl border-[1.5px] border-input bg-card pl-11 pr-4 text-sm text-foreground"
         />
       </div>
       <a
-        className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+        className="sbtn inline-flex h-11 items-center gap-2 rounded-full border-[1.5px] border-primary px-[18px] text-sm font-medium text-primary"
         href="/api/requests/export"
       >
-        <Download className="h-4 w-4" />
+        <Download className="h-[17px] w-[17px]" />
         Export to CSV
       </a>
     </div>
