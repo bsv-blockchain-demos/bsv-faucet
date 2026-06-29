@@ -1,21 +1,11 @@
 import { SignUp } from '@clerk/nextjs';
-import Image from 'next/image';
+import { ThemeToggle } from '../../(dashboard)/theme-toggle';
 
 export default function Page() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background p-6">
-      <div className="flex flex-col items-center gap-4">
-        <Image
-          src="/bsv-blockchain-logo.png"
-          alt="BSV Blockchain"
-          width={64}
-          height={64}
-          className="rounded-2xl"
-          priority
-        />
-        <h1 className="font-display text-2xl font-semibold">
-          Create your BSV Faucet account
-        </h1>
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background p-6">
+      <div className="absolute right-6 top-6 z-10">
+        <ThemeToggle />
       </div>
       <SignUp
         forceRedirectUrl="/api/sign-up"
@@ -28,6 +18,12 @@ export default function Page() {
           elements: {
             rootBox: 'flex w-full justify-center',
             card: 'rounded-[20px] border border-border shadow-soft',
+            logoImage: { borderRadius: '14px' },
+            headerTitle: {
+              fontFamily: "'Chillax', sans-serif",
+              fontSize: '24px',
+              fontWeight: 600
+            },
             formButtonPrimary: 'rounded-full text-[15px] normal-case'
           }
         }}
