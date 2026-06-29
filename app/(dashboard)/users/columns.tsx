@@ -47,7 +47,7 @@ export const columns: ColumnDef<User>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <div className="flex min-w-0 items-center gap-2.5">
+      <div className="flex min-w-0 max-w-[220px] items-center gap-2.5">
         <Avatar className="h-8 w-8 shrink-0">
           <AvatarImage src={row.original.imageUrl} />
           <AvatarFallback className="bg-primary text-xs font-medium text-primary-foreground">
@@ -94,8 +94,8 @@ export const columns: ColumnDef<User>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="text-muted-foreground">
-        {row.original.createdAt.toLocaleString()}
+      <span className="whitespace-nowrap text-muted-foreground">
+        {row.original.createdAt.toLocaleDateString()}
       </span>
     )
   },

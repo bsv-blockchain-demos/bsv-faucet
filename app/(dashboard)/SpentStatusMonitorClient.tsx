@@ -1,12 +1,9 @@
-"use client";
+'use client';
 import useSpentStatusMonitor from '@/hooks/useUpdateSpentStatus';
 
+// Background monitor: runs the spent-status side effect, renders nothing.
 const SpentStatusMonitorClient = () => {
-  const { loading, error } = useSpentStatusMonitor();
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
-
+  useSpentStatusMonitor();
   return null;
 };
 
