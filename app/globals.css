@@ -5,64 +5,64 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    --foreground: 240 5% 18%; /* Soft Black #2D2D31 */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 240 5% 18%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 240 5% 18%;
+    --primary: 239 72% 38%; /* Navy #1B1EA9 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 232 33% 95%; /* Hairline #EFF0F7 */
+    --secondary-foreground: 239 72% 38%;
+    --muted: 232 33% 95%;
+    --muted-foreground: 230 6% 41%; /* #63656F */
+    --accent: 225 100% 93%; /* Ice #DAE3FF */
+    --accent-foreground: 239 72% 38%;
+    --destructive: 4 49% 46%; /* #B0443C */
+    --destructive-foreground: 0 0% 100%;
+    --border: 232 33% 95%; /* Hairline */
+    --input: 225 100% 93%; /* Ice input border */
+    --ring: 186 100% 50%; /* Cyan #00E6FF */
+    --radius: 0.75rem;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
+    /* Brand extras (outside the shadcn token set) */
+    --link: 225 100% 50%; /* Blue #003FFF */
+    --positive: 161 69% 37%; /* #1D9E75 */
+    --negative: 4 49% 46%; /* #B0443C */
+    --shadow-primary: 0 10px 24px -8px rgba(27, 30, 169, 0.5);
+    --shadow-primary-hover: 0 14px 30px -8px rgba(0, 63, 255, 0.55);
+    --shadow-soft: 0 8px 28px rgba(45, 45, 49, 0.08);
+    --topbar: rgba(255, 255, 255, 0.85);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 240 5% 15%; /* #232327 */
+    --foreground: 0 0% 100%;
+    --card: 240 5% 18%; /* #2D2D31 */
+    --card-foreground: 0 0% 100%;
+    --popover: 240 5% 23%; /* #38383E */
+    --popover-foreground: 0 0% 100%;
+    --primary: 225 100% 50%; /* Blue #003FFF */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 23%; /* #38383E */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 240 6% 24%; /* #3A3A41 */
+    --muted-foreground: 229 13% 76%; /* #B9BCC9 */
+    --accent: 237 32% 22%; /* #26284A */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 4 62% 68%; /* #E0837C */
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 6% 24%; /* #3A3A41 */
+    --input: 240 6% 24%;
+    --ring: 186 100% 50%; /* Cyan */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --link: 186 100% 50%; /* Cyan #00E6FF */
+    --positive: 160 51% 58%; /* #5DCAA5 */
+    --negative: 4 62% 68%; /* #E0837C */
+    --shadow-primary: 0 12px 28px -8px rgba(0, 63, 255, 0.55);
+    --shadow-primary-hover: 0 14px 30px -8px rgba(0, 63, 255, 0.55);
+    --shadow-soft: 0 10px 32px rgba(0, 0, 0, 0.35);
+    --topbar: rgba(35, 35, 39, 0.85);
   }
 }
 
@@ -71,22 +71,203 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+  }
+  /* Brand input focus: primary border + soft cyan ring (spec) */
+  input,
+  textarea,
+  select {
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none;
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.55);
   }
 }
 
-/* Chrome, Safari, Edge, Opera */
+/* ============================================================
+   Brand motion layer — premium shine, lift, staggered entrance.
+   (User-approved override of the brief's "calm surfaces".)
+   Everything collapses under prefers-reduced-motion.
+   ============================================================ */
+
+/* Primary button: light-streak shine + hover lift */
+.pbtn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1), filter 0.2s ease,
+    box-shadow 0.25s ease;
+}
+.pbtn::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 -160%;
+  width: 55%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 100%
+  );
+  transform: skewX(-20deg);
+  pointer-events: none;
+  z-index: 2;
+}
+.pbtn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+  box-shadow: var(--shadow-primary-hover);
+}
+.pbtn:active {
+  transform: translateY(0);
+}
+.pbtn:hover::after {
+  animation: shine 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.shine-loop::after {
+  animation: shine 3.4s ease-in-out 1.2s infinite;
+}
+@keyframes shine {
+  from {
+    left: -160%;
+  }
+  to {
+    left: 160%;
+  }
+}
+
+/* Secondary button: ice fill + lift on hover */
+.sbtn {
+  transition: background-color 0.18s ease, border-color 0.18s ease,
+    transform 0.18s ease;
+}
+.sbtn:hover {
+  background-color: hsl(var(--accent));
+  transform: translateY(-1px);
+}
+.sbtn:active {
+  transform: translateY(0);
+}
+
+/* Nav rail micro-interaction */
+.navbtn {
+  transition: background-color 0.15s ease, transform 0.15s ease, color 0.15s ease;
+}
+.navbtn:hover {
+  transform: translateY(-2px);
+}
+.navbtn:active {
+  transform: translateY(0) scale(0.94);
+}
+
+/* Card / row hover lift (metrics tiles, deposit rows) */
+.lift {
+  transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-soft);
+  border-color: hsl(var(--input));
+}
+
+/* Table row hover */
+.trow {
+  transition: background-color 0.14s ease;
+  border-radius: 10px;
+}
+.trow:hover {
+  background-color: hsl(var(--muted));
+}
+
+/* Entrance: staggered fade-up */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.stagger > * {
+  animation: fadeUp 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.stagger > *:nth-child(1) {
+  animation-delay: 0.02s;
+}
+.stagger > *:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.stagger > *:nth-child(3) {
+  animation-delay: 0.18s;
+}
+.stagger > *:nth-child(4) {
+  animation-delay: 0.26s;
+}
+.stagger > *:nth-child(5) {
+  animation-delay: 0.34s;
+}
+.grid-stagger > * {
+  animation: fadeUp 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.grid-stagger > *:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.grid-stagger > *:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.screen-fade {
+  animation: fadeIn 0.35s ease both;
+}
+/* Safety net: an entrance animation must never gate visibility */
+.revealed .stagger > *,
+.revealed .grid-stagger > * {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pbtn,
+  .sbtn,
+  .navbtn,
+  .lift,
+  .trow,
+  .stagger > *,
+  .grid-stagger > *,
+  .screen-fade {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  .pbtn::after,
+  .shine-loop::after {
+    display: none !important;
+  }
+}
+
+/* Search input cancel-button resets */
 input[type='search']::-webkit-search-cancel-button {
   -webkit-appearance: none;
   appearance: none;
 }
-
-/* Firefox */
 input[type='search']::-moz-search-cancel-button {
   display: none;
 }
-
-/* Microsoft Edge */
 input[type='search']::-ms-clear {
   display: none;
 }

@@ -1,6 +1,7 @@
 'use client';
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -29,6 +30,9 @@ export const columns: ColumnDef<User>[] = [
         ID
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
+    ),
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">{row.original.id}</span>
     )
   },
   {
@@ -43,14 +47,20 @@ export const columns: ColumnDef<User>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        <Avatar>
+      <div className="flex min-w-0 items-center gap-2.5">
+        <Avatar className="h-8 w-8 shrink-0">
           <AvatarImage src={row.original.imageUrl} />
-          <AvatarFallback>{row.original.username}</AvatarFallback>
+          <AvatarFallback className="bg-primary text-xs font-medium text-primary-foreground">
+            {row.original.username?.charAt(0)?.toUpperCase()}
+          </AvatarFallback>
         </Avatar>
-        <div className="flex justify-start flex-col">
-          <span>{row.original.username}</span>
-          <span>{row.original.email}</span>
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate font-medium leading-tight">
+            {row.original.username}
+          </span>
+          <span className="truncate text-[13px] text-muted-foreground">
+            {row.original.email}
+          </span>
         </div>
       </div>
     )
@@ -66,7 +76,11 @@ export const columns: ColumnDef<User>[] = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div className="capitalize">{row.original.role}</div>
+    cell: ({ row }) => (
+      <Badge variant="muted" className="capitalize">
+        {row.original.role}
+      </Badge>
+    )
   },
   {
     accessorKey: 'createdAt',
@@ -79,7 +93,11 @@ export const columns: ColumnDef<User>[] = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => row.original.createdAt.toLocaleString()
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">
+        {row.original.createdAt.toLocaleString()}
+      </span>
+    )
   },
   {
     accessorKey: 'withdrawn',
@@ -92,7 +110,11 @@ export const columns: ColumnDef<User>[] = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => Number(row.original.withdrawn).toLocaleString()
+    cell: ({ row }) => (
+      <span className="font-medium tabular-nums">
+        {Number(row.original.withdrawn).toLocaleString()}
+      </span>
+    )
   },
   {
     accessorKey: 'paused',
@@ -101,11 +123,19 @@ export const columns: ColumnDef<User>[] = [
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
       >
-        Paused
+        Status
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => (row.original.paused ? 'Paused' : 'Active')
+    cell: ({ row }) =>
+      row.original.paused ? (
+        <Badge variant="muted">Paused</Badge>
+      ) : (
+        <Badge variant="positive">
+          <span className="h-1.5 w-1.5 rounded-full bg-positive" />
+          Active
+        </Badge>
+      )
   },
   {
     id: 'actions',

@@ -18,10 +18,22 @@ export default {
       }
     },
     extend: {
+      fontFamily: {
+        sans: ['var(--font-noto-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Chillax', 'var(--font-noto-sans)', 'sans-serif']
+      },
+      boxShadow: {
+        primary: 'var(--shadow-primary)',
+        'primary-hover': 'var(--shadow-primary-hover)',
+        soft: 'var(--shadow-soft)'
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+        link: 'hsl(var(--link) / <alpha-value>)',
+        positive: 'hsl(var(--positive) / <alpha-value>)',
+        negative: 'hsl(var(--negative) / <alpha-value>)',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         primary: {

@@ -19,17 +19,20 @@ export function NavItem({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const active =
+    pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <Link
           href={href}
+          aria-label={label}
           className={clsx(
-            'flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8',
-            {
-              'bg-accent text-black': pathname === href
-            }
+            'navbtn flex h-[46px] w-[46px] items-center justify-center rounded-[13px]',
+            active
+              ? 'bg-accent text-primary'
+              : 'text-muted-foreground hover:text-foreground'
           )}
         >
           {children}

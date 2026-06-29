@@ -3,30 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 // import ReCAPTCHA from 'react-google-recaptcha';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
-import {
-  Timer,
-  Wallet,
-  History,
-  AlertTriangle,
-  LoaderIcon
-} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Timer, AlertTriangle, CheckCircle2, Copy } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -38,6 +18,43 @@ interface Transaction {
   txType: string;
   vout: Array<{ address: string; satoshis: number }>;
   userId: string;
+}
+
+function MetricTile({
+  label,
+  value,
+  unit,
+  loading
+}: {
+  label: string;
+  value: number | null;
+  unit: string;
+  loading: boolean;
+}) {
+  return (
+    <div className="lift rounded-2xl border bg-card p-[22px]">
+      <div className="mb-2.5 text-[13px] font-medium text-muted-foreground">
+        {label}
+      </div>
+      {loading ? (
+        <Skeleton className="h-7 w-32" />
+      ) : (
+        <div className="font-display text-2xl font-semibold tabular-nums">
+          {(value ?? 0).toLocaleString()}{' '}
+          <span className="font-sans text-sm text-muted-foreground">{unit}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LimitRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between border-b py-3 text-sm">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium">{value}</span>
+    </div>
+  );
 }
 
 export default function DashboardPage() {
@@ -217,179 +234,223 @@ export default function DashboardPage() {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>BSV Testnet Faucet</CardTitle>
-          <CardDescription>Request testnet BSV tokens</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-secondary rounded-lg">
-            <div className="flex items-center space-x-2">
-              <Wallet className="h-5 w-5" />
-              <span>Faucet Balance:</span>
-            </div>
-            {isLoading ? (
-              <Skeleton className="h-6 w-24" />
-            ) : (
-              <span className="font-bold">{faucetBalance?.toLocaleString()} satoshis</span>
-            )}
-          </div>
+  const copyFaucetAddress = () => {
+    if (!adminWalletAddress) return;
+    navigator.clipboard.writeText(adminWalletAddress);
+    toast({
+      title: 'Copied to clipboard',
+      description: 'Faucet address copied to clipboard'
+    });
+  };
 
-          <div className="space-y-4">
-            <Input
-              placeholder="Enter BSV testnet address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-            <Input
-              type="text"
-              inputMode="numeric"
-              placeholder={`Amount (in satoshis, max ${MAX_DAILY_WITHDRAWAL.toLocaleString()})`}
-              value={amount.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
-            />
-            {/* <ReCAPTCHA
-              sitekey={RECAPTCHA_SITE_KEY}
-              onChange={onCaptchaChange}
-            />
-            */}
+  return (
+    <div className="stagger flex flex-col gap-7">
+      {/* Header */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-[26px] font-semibold leading-tight">
+            BSV Testnet Faucet
+          </h1>
+          <p className="mt-1.5 text-[15px] text-muted-foreground">
+            Request testnet BSV tokens.
+          </p>
+        </div>
+      </div>
+
+      {/* Metrics tiles */}
+      <div className="grid-stagger grid grid-cols-3 gap-[18px] max-[860px]:grid-cols-1">
+        <MetricTile
+          label="Faucet balance"
+          value={faucetBalance}
+          unit="satoshis"
+          loading={isLoading}
+        />
+        <MetricTile
+          label="Withdrawn today"
+          value={totalWithdrawn}
+          unit="sat"
+          loading={isLoading}
+        />
+        <div className="lift rounded-2xl border bg-card p-[22px]">
+          <div className="mb-2.5 text-[13px] font-medium text-muted-foreground">
+            Daily limit
+          </div>
+          <div className="font-display text-2xl font-semibold tabular-nums">
+            {MAX_DAILY_WITHDRAWAL.toLocaleString()}{' '}
+            <span className="font-sans text-sm text-muted-foreground">sat</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Request + donate/limits */}
+      <div className="grid-stagger grid grid-cols-[1.4fr_1fr] items-stretch gap-6 max-[1100px]:grid-cols-1">
+        {/* Request */}
+        <section className="rounded-[20px] border bg-card p-7">
+          <h2 className="font-display text-[20px] font-semibold">
+            Request testnet BSV
+          </h2>
+          <p className="mb-5 mt-0.5 text-sm text-muted-foreground">
+            Tokens are sent to the address you provide.
+          </p>
+          <div className="flex flex-col gap-3.5">
+            <div>
+              <label className="mb-[7px] block text-[13px] font-medium">
+                Destination address
+              </label>
+              <Input
+                placeholder="Enter BSV testnet address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="mb-[7px] block text-[13px] font-medium">
+                Amount (max {MAX_DAILY_WITHDRAWAL.toLocaleString()} sat)
+              </label>
+              <Input
+                type="text"
+                inputMode="numeric"
+                placeholder="Amount in satoshis"
+                value={amount.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
+              />
+            </div>
+            {/* <ReCAPTCHA sitekey={RECAPTCHA_SITE_KEY} onChange={onCaptchaChange} /> */}
 
             {totalWithdrawn > MAX_DAILY_WITHDRAWAL && (
-              <div className="flex items-center space-x-2 text-yellow-600">
-                <Timer className="h-5 w-5" />
+              <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+                <Timer className="h-4 w-4 shrink-0" />
                 <span>
-                  Next request available for this address in:
+                  Next request available for this address in{' '}
                   {formatTimeRemaining(remainingTime)}
                 </span>
               </div>
             )}
 
             <Button
-              className="w-full flex items-center justify-center"
+              className="shine-loop mt-1 h-[50px] w-full text-base"
               onClick={handleRequest}
               disabled={totalWithdrawn > MAX_DAILY_WITHDRAWAL || isLoading}
-              >
-              {isLoading ? (
-                <LoaderIcon className="animate-spin h-5 w-5 mr-2" />
-              ) : (
-                'Request BSV'
-              )}
-            </Button>
-          </div>
-
-          {error && (
-            <p className="text-red-500" role="alert">
-              <AlertTriangle className="inline h-4 w-4 mr-2" />
-              {error}
-            </p>
-          )}
-          {success && (
-            <p className="text-green-500" role="status">
-              <History className="inline h-4 w-4 mr-2" />
-              {success}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
-          <CardDescription>Last 5 faucet transactions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Amount (satoshis)</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Transaction ID</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                Array(5)
-                  .fill(0)
-                  .map((_, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        <Skeleton className="h-5 w-24" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-5 w-16" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-5 w-20" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-5 w-32" />
-                      </TableCell>
-                    </TableRow>
-                  ))
-              ) : transactions && transactions.length > 0 ? (
-                transactions.slice(0, 5).map((tx) => (
-                  <TableRow key={tx.id}>
-                    <TableCell>
-                      {new Date(tx.date).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>{Number(tx.amount).toLocaleString()}</TableCell>
-                    <TableCell>{tx.txType}</TableCell>
-                    <TableCell>
-                      <a
-                        href={`https://test.whatsonchain.com/tx/${tx.txid}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
-                        title={`View Transaction ${tx.txid}`}
-                      >
-                        {tx.txid.substring(0, 8)}...
-                      </a>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center">
-                    No transactions found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Donate to Faucet</CardTitle>
-          <CardDescription>
-            Donate unused BSV back to the Faucet.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="h-full w-full flex items-center">
-          <div className="p-4 rounded-lg">
-            <div className="text-sm font-medium">Faucet Address</div>
-            <p className="text-sm text-muted-foreground">
-              Click to copy address, send unused BSV back to faucet address
-            </p>
-            <div
-              className="text-xl text-center bg-secondary rounded-lg p-2 px-4 font-semibold"
-              onClick={() => {
-                navigator.clipboard.writeText(adminWalletAddress);
-                toast({
-                  title: 'Copied to clipboard',
-                  description: `Faucet address copied to clipboard`
-                });
-              }}
             >
-              {adminWalletAddress}
-            </div>
+              {isLoading ? 'Requesting…' : 'Request BSV'}
+            </Button>
+
+            {error && (
+              <p role="alert" className="flex items-start gap-2 text-sm text-negative">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span className="break-words">{error}</span>
+              </p>
+            )}
+            {success && (
+              <p role="status" className="flex items-start gap-2 text-sm text-positive">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                <span className="break-words">{success}</span>
+              </p>
+            )}
           </div>
-        </CardContent>
-      </Card>
+        </section>
+
+        {/* Donate + limits */}
+        <div className="flex flex-col gap-6">
+          <section className="rounded-[20px] border bg-card p-7">
+            <h2 className="font-display text-[20px] font-semibold">
+              Donate to faucet
+            </h2>
+            <p className="mb-[18px] mt-0.5 text-sm text-muted-foreground">
+              Send unused testnet BSV back.
+            </p>
+            <div className="mb-2 text-[13px] font-medium">Faucet address</div>
+            <button
+              type="button"
+              onClick={copyFaucetAddress}
+              title="Copy faucet address"
+              className="flex w-full items-center justify-between gap-2.5 rounded-xl bg-accent px-4 py-3.5 text-left text-accent-foreground transition-[filter] hover:brightness-[0.97]"
+            >
+              <span className="break-all font-mono text-[13px] font-semibold">
+                {adminWalletAddress || '—'}
+              </span>
+              <Copy className="h-[18px] w-[18px] shrink-0" />
+            </button>
+          </section>
+
+          <section className="flex flex-1 flex-col rounded-[20px] border bg-card p-7">
+            <h2 className="mb-4 font-display text-[20px] font-semibold">
+              Request limits
+            </h2>
+            <LimitRow
+              label="Max per request"
+              value={`${MAX_DAILY_WITHDRAWAL.toLocaleString()} sat`}
+            />
+            <LimitRow label="Cooldown" value="24 hours" />
+            <div className="flex items-center justify-between py-3 text-sm">
+              <span className="text-muted-foreground">Network</span>
+              <Badge variant="muted">BSV Testnet</Badge>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {/* Recent transactions */}
+      <section className="rounded-[20px] border bg-card p-7">
+        <h2 className="mb-[18px] font-display text-[20px] font-semibold">
+          Recent transactions
+        </h2>
+        <div className="overflow-x-auto">
+          <div className="min-w-[560px]">
+            <div className="grid grid-cols-[1.2fr_1.2fr_1fr_1fr] gap-3 border-b px-1.5 pb-3 text-[13px] font-medium text-muted-foreground">
+              <div>Date</div>
+              <div>Amount (satoshis)</div>
+              <div>Type</div>
+              <div>Transaction ID</div>
+            </div>
+            {isLoading ? (
+              Array(5)
+                .fill(0)
+                .map((_, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-[1.2fr_1.2fr_1fr_1fr] items-center gap-3 border-b px-1.5 py-4"
+                  >
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-5 w-20" />
+                    <Skeleton className="h-5 w-32" />
+                  </div>
+                ))
+            ) : transactions && transactions.length > 0 ? (
+              transactions.slice(0, 5).map((tx) => (
+                <div
+                  key={tx.id}
+                  className="trow grid grid-cols-[1.2fr_1.2fr_1fr_1fr] items-center gap-3 border-b px-1.5 py-4 text-[15px]"
+                >
+                  <div>{new Date(tx.date).toLocaleDateString()}</div>
+                  <div className="font-medium tabular-nums">
+                    {Number(tx.amount).toLocaleString()}
+                  </div>
+                  <div>
+                    <Badge variant="muted">{tx.txType}</Badge>
+                  </div>
+                  <div>
+                    <a
+                      href={`https://test.whatsonchain.com/tx/${tx.txid}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium tabular-nums text-link hover:underline"
+                      title={`View Transaction ${tx.txid}`}
+                    >
+                      {tx.txid.substring(0, 8)}…
+                    </a>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="px-1.5 py-8 text-center text-sm text-muted-foreground">
+                No transactions found
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
