@@ -44,7 +44,7 @@ interface Transaction {
 }
 
 const TransactionSkeleton = () => (
-  <div className="flex animate-pulse items-center justify-between rounded-2xl border p-4">
+  <div className="flex animate-pulse flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between">
     <div className="space-y-2">
       <Skeleton className="h-5 w-24" />
       <Skeleton className="h-4 w-48" />
@@ -146,7 +146,7 @@ export default function TreasuryDepositHistory() {
                 .map((tx) => (
                   <div
                     key={tx.id}
-                    className="lift flex items-center justify-between gap-4 rounded-2xl border p-4"
+                    className="lift flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
                   >
                     <div className="min-w-0">
                       <div className="mb-1 flex items-center gap-2.5">
@@ -163,7 +163,7 @@ export default function TreasuryDepositHistory() {
                         {safelyGetNestedProp(tx, 'beefTx.txid').substring(0, 8)}…
                       </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-4">
+                    <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:shrink-0 sm:justify-end">
                       <div className="text-[13px] text-muted-foreground">
                         {formatDate(tx.date)}
                       </div>
@@ -260,7 +260,7 @@ export default function TreasuryDepositHistory() {
                               />
                             </div>
                           </div>
-                          <div className="flex justify-end space-x-2">
+                          <div className="flex flex-wrap justify-end gap-2">
                             <Button
                               variant="outline"
                               size="sm"

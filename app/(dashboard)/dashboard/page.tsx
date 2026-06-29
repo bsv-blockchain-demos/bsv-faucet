@@ -285,7 +285,7 @@ export default function DashboardPage() {
       {/* Request + donate/limits */}
       <div className="grid-stagger grid grid-cols-[1.4fr_1fr] items-stretch gap-6 max-[1100px]:grid-cols-1">
         {/* Request */}
-        <section className="rounded-[20px] border bg-card p-7">
+        <section className="rounded-[20px] border bg-card p-5 sm:p-7">
           <h2 className="font-display text-[20px] font-semibold">
             Request testnet BSV
           </h2>
@@ -352,7 +352,7 @@ export default function DashboardPage() {
 
         {/* Donate + limits */}
         <div className="flex flex-col gap-6">
-          <section className="rounded-[20px] border bg-card p-7">
+          <section className="rounded-[20px] border bg-card p-5 sm:p-7">
             <h2 className="font-display text-[20px] font-semibold">
               Donate to faucet
             </h2>
@@ -373,7 +373,7 @@ export default function DashboardPage() {
             </button>
           </section>
 
-          <section className="flex flex-1 flex-col rounded-[20px] border bg-card p-7">
+          <section className="flex flex-1 flex-col rounded-[20px] border bg-card p-5 sm:p-7">
             <h2 className="mb-4 font-display text-[20px] font-semibold">
               Request limits
             </h2>
@@ -391,7 +391,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent transactions */}
-      <section className="rounded-[20px] border bg-card p-7">
+      <section className="rounded-[20px] border bg-card p-5 sm:p-7">
         <h2 className="mb-[18px] font-display text-[20px] font-semibold">
           Recent transactions
         </h2>

@@ -98,7 +98,7 @@ export default function AdminTreasury() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex w-full items-center justify-between gap-4">
+        <div className="flex w-full flex-wrap items-center justify-between gap-3">
           <CardTitle>Treasury balance</CardTitle>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -126,7 +126,7 @@ export default function AdminTreasury() {
               {isLoading ? (
                 <Skeleton className="h-8 w-40" />
               ) : (
-                <div className="font-display text-[26px] font-semibold tabular-nums">
+                <div className="font-display text-[26px] font-semibold tabular-nums max-[560px]:text-[22px]">
                   {treasuryData.balanceBSV.toFixed(8)}
                 </div>
               )}
@@ -138,7 +138,7 @@ export default function AdminTreasury() {
               {isLoading ? (
                 <Skeleton className="h-8 w-40" />
               ) : (
-                <div className="font-display text-[26px] font-semibold tabular-nums">
+                <div className="font-display text-[26px] font-semibold tabular-nums max-[560px]:text-[22px]">
                   {Math.floor(treasuryData.balanceSatoshis).toLocaleString()}
                 </div>
               )}

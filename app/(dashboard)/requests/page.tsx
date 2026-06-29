@@ -15,7 +15,7 @@ export default async function RequestsPage() {
   }
   const transactions = await fetchTransactions(user);
   return (
-    <section className="rounded-[20px] border bg-card p-7">
+    <section className="rounded-[20px] border bg-card p-5 sm:p-7">
       <div className="mb-[22px]">
         <h1 className="font-display text-[26px] font-semibold leading-tight">
           Requests

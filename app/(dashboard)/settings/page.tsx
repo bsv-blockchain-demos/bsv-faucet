@@ -124,7 +124,7 @@ export default function SettingsPage() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
-          <TabsTrigger value="danger">Danger Zone</TabsTrigger>
+          <TabsTrigger value="danger">Danger</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">
