@@ -10,6 +10,11 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Transaction {
@@ -80,10 +85,6 @@ export default function AdminTreasury() {
     return () => clearInterval(interval); // Cleanup on component unmount
   }, []);
 
-  const handleMineBlock = () => {
-    console.log('Mining block');
-  };
-
   if (error) {
     return (
       <Alert variant="destructive">
@@ -99,24 +100,20 @@ export default function AdminTreasury() {
       <CardHeader>
         <div className="flex w-full items-center justify-between gap-4">
           <CardTitle>Treasury balance</CardTitle>
-          <div className="relative">
-            <Button
-              variant="outline"
-              className={
-                treasuryData.isLowBalance
-                  ? 'animate-pulse border-destructive text-destructive'
-                  : ''
-              }
-              onClick={handleMineBlock}
-            >
-              <RefreshCcw className="h-4 w-4" /> Mine block
-            </Button>
-            {treasuryData.isLowBalance && (
-              <div className="absolute -right-2 -top-2">
-                <AlertTriangle className="h-4 w-4 text-destructive" />
-              </div>
-            )}
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={0} className="inline-flex cursor-not-allowed">
+                <Button
+                  variant="outline"
+                  disabled
+                  className="pointer-events-none opacity-50"
+                >
+                  <RefreshCcw className="h-4 w-4" /> Mine block
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>Not available in this environment</TooltipContent>
+          </Tooltip>
         </div>
       </CardHeader>
       <CardContent>

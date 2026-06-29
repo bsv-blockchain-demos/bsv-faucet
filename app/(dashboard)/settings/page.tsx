@@ -70,26 +70,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const currentPassword = formData.get('currentPassword') as string;
-    const newPassword = formData.get('newPassword') as string;
-
-    try {
-      const response = await axios.post('/api/settings', {
-        currentPassword,
-        newPassword
-      });
-      alert(response.data.message);
-      form.reset();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to change password');
-    }
-  };
-
   const handleDeleteAccount = async () => {
     const confirmDelete = confirm(
       'Are you sure you want to delete your account? This action cannot be undone.'
@@ -141,9 +121,8 @@ export default function SettingsPage() {
       )}
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="danger">Danger Zone</TabsTrigger>
         </TabsList>
@@ -181,43 +160,6 @@ export default function SettingsPage() {
               </CardContent>
               <CardFooter>
                 <Button type="submit">Update profile</Button>
-              </CardFooter>
-            </form>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="security">
-          <Card>
-            <CardHeader>
-              <CardTitle>Security</CardTitle>
-              <CardDescription>
-                Ensure your account is using a long, random password to stay
-                secure.
-              </CardDescription>
-            </CardHeader>
-            <form onSubmit={handleChangePassword}>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Current password</Label>
-                  <Input
-                    id="currentPassword"
-                    name="currentPassword"
-                    type="password"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">New password</Label>
-                  <Input
-                    id="newPassword"
-                    name="newPassword"
-                    type="password"
-                    required
-                  />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button type="submit">Update password</Button>
               </CardFooter>
             </form>
           </Card>
