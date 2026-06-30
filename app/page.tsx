@@ -169,7 +169,7 @@ export default function LandingPage() {
               key={p.title}
               className="lift rounded-[20px] border bg-card px-[26px] py-[30px]"
             >
-              <div className="mb-5 inline-flex h-[50px] w-[50px] items-center justify-center rounded-[14px] bg-accent text-accent-foreground">
+              <div className="mb-5 inline-flex h-[50px] w-[50px] items-center justify-center rounded-[14px] bg-accent text-accent-foreground dark:bg-link/15 dark:text-link">
                 <p.Icon className="h-6 w-6" strokeWidth={1.7} />
               </div>
               <h3 className="mb-2 font-display text-[20px] font-semibold">
@@ -195,7 +195,7 @@ export default function LandingPage() {
                 key={st.n}
                 className="relative overflow-hidden rounded-[20px] border bg-card px-[26px] py-[30px]"
               >
-                <div className="pointer-events-none absolute right-[22px] top-[18px] z-0 font-display text-[56px] font-semibold leading-none text-accent">
+                <div className="pointer-events-none absolute right-[22px] top-[18px] z-0 font-display text-[56px] font-semibold leading-none text-accent dark:text-link/50">
                   {st.n}
                 </div>
                 <h3 className="relative z-[1] mb-2 pr-14 font-display text-[20px] font-semibold">
