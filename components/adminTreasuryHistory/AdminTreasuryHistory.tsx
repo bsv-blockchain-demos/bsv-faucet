@@ -45,6 +45,8 @@ export default function AdminTreasury() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isStale, setIsStale] = useState(false);
+  const [asOf, setAsOf] = useState<string | null>(null);
 
   const fetchBalance = async () => {
     const balanceResponse = await fetch('/api/wallet/balance');
@@ -52,15 +54,14 @@ export default function AdminTreasury() {
     if (!balanceResponse.ok) {
       throw new Error(balanceData?.error || 'Failed to fetch balance');
     }
-    return balanceData.balance;
+    return balanceData as { balance: number; stale?: boolean; asOf?: string };
   };
 
   const fetchData = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Fetch balance first
-      const balanceSatoshis = await fetchBalance();
+      const { balance: balanceSatoshis, stale, asOf } = await fetchBalance();
       const balanceBSV = balanceSatoshis / 100000000; // Convert to BSV
 
       setTreasuryData({
@@ -70,6 +71,10 @@ export default function AdminTreasury() {
         isLowBalance: balanceBSV < 10,
         recentTransactions: []
       });
+      // A stale figure is worth showing with a caveat; replacing the whole card
+      // with an error banner hides a balance that is almost certainly still right.
+      setIsStale(stale === true);
+      setAsOf(asOf ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch treasury data');
       console.error(err);
@@ -118,6 +123,17 @@ export default function AdminTreasury() {
       </CardHeader>
       <CardContent>
         <div className="grid gap-4">
+          {isStale && !isLoading ? (
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Showing last known balance</AlertTitle>
+              <AlertDescription>
+                WhatsOnChain is not responding, so this figure has not been
+                refreshed
+                {asOf ? ` since ${new Date(asOf).toLocaleString()}` : ''}.
+              </AlertDescription>
+            </Alert>
+          ) : null}
           <div className="grid grid-cols-2 gap-[18px] max-[560px]:grid-cols-1">
             <div className="rounded-2xl bg-muted p-[22px]">
               <div className="mb-2.5 text-[13px] font-medium text-muted-foreground">

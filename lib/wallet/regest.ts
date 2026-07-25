@@ -1,36 +1,139 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
 const API_URLS = {
   testnet: 'https://api.whatsonchain.com/v1/bsv/test',
   mainnet: 'https://api.whatsonchain.com/v1/bsv/main',
 };
 
-export const getUTXOs = async (address: string, network: 'testnet' | 'mainnet' = 'testnet') => {
-  const apiUrl = API_URLS[network];
-  try {
-    const response = await axios.get(`${apiUrl}/address/${address}/unspent/all`, { timeout: 10000 });
-    return response.data.result;
-  } catch (error) {
-    throw new Error(`Error fetching UTXOs: ${error}`);
+const REQUEST_TIMEOUT_MS = 10_000;
+const MAX_ATTEMPTS = 3;
+const BASE_BACKOFF_MS = 250;
+
+/**
+ * Error raised when a WhatsOnChain request fails. Preserves the upstream HTTP
+ * status so callers can tell a provider outage (5xx / network) apart from a
+ * genuine client mistake such as a malformed address (4xx).
+ */
+export class ProviderError extends Error {
+  readonly status?: number;
+  readonly attempts: number;
+
+  constructor(
+    message: string,
+    options: { status?: number; attempts: number; cause?: unknown }
+  ) {
+    super(message);
+    this.name = 'ProviderError';
+    this.status = options.status;
+    this.attempts = options.attempts;
+    this.cause = options.cause;
   }
+
+  /** True when the provider itself is at fault and the call is worth retrying later. */
+  get isUpstreamFailure(): boolean {
+    return (
+      this.status === undefined || this.status >= 500 || this.status === 429
+    );
+  }
+}
+
+const sleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Retry network errors, timeouts, rate limits and 5xx. Never retry other 4xx. */
+const isRetryable = (status: number | undefined) =>
+  status === undefined || status >= 500 || status === 429;
+
+/**
+ * Issue a request against WhatsOnChain with a bounded number of retries and
+ * exponential backoff with jitter. WhatsOnChain returns intermittent 5xx even
+ * in normal operation, so a single failed attempt should never surface to the
+ * caller as an outage.
+ */
+const request = async <T>(
+  description: string,
+  config: AxiosRequestConfig,
+  { retry = true }: { retry?: boolean } = {}
+): Promise<T> => {
+  const maxAttempts = retry ? MAX_ATTEMPTS : 1;
+  let lastStatus: number | undefined;
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await axios.request<T>({
+        timeout: REQUEST_TIMEOUT_MS,
+        ...config,
+      });
+      return response.data;
+    } catch (error) {
+      lastError = error;
+      lastStatus = axios.isAxiosError(error)
+        ? error.response?.status
+        : undefined;
+
+      if (!isRetryable(lastStatus) || attempt === maxAttempts) {
+        break;
+      }
+
+      // Exponential backoff with jitter so concurrent callers do not retry in lockstep.
+      const backoff = BASE_BACKOFF_MS * 2 ** (attempt - 1);
+      await sleep(backoff + Math.random() * backoff);
+    }
+  }
+
+  const statusText = lastStatus ? `HTTP ${lastStatus}` : 'network error';
+  const attemptText = maxAttempts === 1 ? '1 attempt' : `${maxAttempts} attempts`;
+  throw new ProviderError(
+    `${description}: WhatsOnChain request failed after ${attemptText} (${statusText})`,
+    { status: lastStatus, attempts: maxAttempts, cause: lastError }
+  );
 };
 
-export const broadcastTransaction = async (rawTx: string, network: 'testnet' | 'mainnet' = 'testnet') => {
+export const getUTXOs = async (
+  address: string,
+  network: 'testnet' | 'mainnet' = 'testnet'
+) => {
   const apiUrl = API_URLS[network];
-  try {
-    const response = await axios.post(`${apiUrl}/tx/raw`, { txhex: rawTx }, { timeout: 10000 });
-    return response.data;
-  } catch (error) {
-    throw new Error(`Error broadcasting transaction: ${error}`);
-  }
+  const data = await request<{ result?: unknown } | unknown[]>(
+    'Error fetching UTXOs',
+    {
+      method: 'GET',
+      url: `${apiUrl}/address/${address}/unspent/all`,
+    }
+  );
+
+  // `/unspent/all` wraps the list in `result`; older endpoints return a bare array.
+  if (Array.isArray(data)) return data;
+  return Array.isArray(data?.result) ? data.result : [];
 };
 
-export const getRawTransaction = async (tx_hash: string, network: 'testnet' | 'mainnet' = 'testnet') => {
+export const broadcastTransaction = async (
+  rawTx: string,
+  network: 'testnet' | 'mainnet' = 'testnet'
+) => {
   const apiUrl = API_URLS[network];
-  try {
-    const response = await axios.get(`${apiUrl}/tx/${tx_hash}/hex`, { timeout: 10000 });
-    return response.data;
-  } catch (error) {
-    throw new Error(`Error fetching raw transaction: ${error}`);
-  }
+  // Deliberately not retried: a broadcast that timed out may still have landed,
+  // and a second attempt would come back as "txn-already-known" and read as a
+  // failure for a transaction that actually succeeded.
+  return request<string>(
+    'Error broadcasting transaction',
+    {
+      method: 'POST',
+      url: `${apiUrl}/tx/raw`,
+      data: { txhex: rawTx },
+    },
+    { retry: false }
+  );
+};
+
+export const getRawTransaction = async (
+  tx_hash: string,
+  network: 'testnet' | 'mainnet' = 'testnet'
+) => {
+  const apiUrl = API_URLS[network];
+  return request<string>('Error fetching raw transaction', {
+    method: 'GET',
+    url: `${apiUrl}/tx/${tx_hash}/hex`,
+  });
 };

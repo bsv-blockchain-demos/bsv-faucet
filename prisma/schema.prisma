@@ -72,6 +72,17 @@ model Wallet {
   type       WalletType @default(master)
 }
 
+/// Last successful balance reading per address, used to keep serving a figure
+/// while the blockchain provider is unavailable. Not a source of truth: it is
+/// only ever written from a confirmed provider response.
+/// `updatedAt` is set explicitly rather than with @updatedAt so the staleness
+/// calculation uses the moment the reading was taken.
+model BalanceCache {
+  address   String   @id
+  balance   BigInt
+  updatedAt DateTime
+}
+
 enum Role {
   user
   admin

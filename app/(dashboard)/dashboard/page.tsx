@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useUser } from '@clerk/nextjs';
 // import ReCAPTCHA from 'react-google-recaptcha';
 import { Input } from '@/components/ui/input';
@@ -24,12 +24,14 @@ function MetricTile({
   label,
   value,
   unit,
-  loading
+  loading,
+  note
 }: {
   label: string;
   value: number | null;
   unit: string;
   loading: boolean;
+  note?: string;
 }) {
   return (
     <div className="lift rounded-2xl border bg-card p-[22px]">
@@ -44,6 +46,11 @@ function MetricTile({
           <span className="font-sans text-sm text-muted-foreground">{unit}</span>
         </div>
       )}
+      {!loading && note ? (
+        <div className="mt-1.5 font-sans text-xs text-muted-foreground">
+          {note}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -66,10 +73,15 @@ export default function DashboardPage() {
   const [totalWithdrawn, setTotalWithdrawn] = useState(0);
 
   const [faucetBalance, setFaucetBalance] = useState<number | null>(null);
+  const [balanceAsOf, setBalanceAsOf] = useState<string | null>(null);
+  const [balanceStale, setBalanceStale] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  // Tracks whether the user has already been told the balance is degraded, so
+  // the 60s poll raises one toast per outage rather than one per tick.
+  const staleNotifiedRef = useRef(false);
 
   // const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
   const MAX_DAILY_WITHDRAWAL = parseInt(
@@ -105,15 +117,33 @@ export default function DashboardPage() {
         const transactionsData = transactionsResponse.ok ? await transactionsResponse.json() : [];
         const remainingData = remainingTimeResponse.ok ? await remainingTimeResponse.json() : {};
 
-        if (!balanceResponse.ok) {
+        // A stale reading still comes back 200 with `stale: true`, so the tile
+        // keeps showing the last known figure instead of dropping to zero.
+        const isUnavailable = !balanceResponse.ok;
+        const isStale = isUnavailable || balanceData?.stale === true;
+
+        // Only announce a change in state: during a multi-hour provider outage
+        // this poll runs every 60s and must not queue a toast each time.
+        if (isStale && !staleNotifiedRef.current) {
+          staleNotifiedRef.current = true;
           toast({
-            title: 'Balance Unavailable',
-            description: balanceData?.error || 'Unable to fetch wallet balance. The blockchain provider may be temporarily down.',
+            title: isUnavailable ? 'Balance Unavailable' : 'Balance May Be Out Of Date',
+            description:
+              balanceData?.error ||
+              balanceData?.warning ||
+              'Unable to fetch wallet balance. The blockchain provider may be temporarily down.',
             variant: 'destructive'
           });
+        } else if (!isStale) {
+          staleNotifiedRef.current = false;
         }
 
-        setFaucetBalance(balanceData.balance ?? 0);
+        setBalanceStale(isStale);
+        setBalanceAsOf(balanceData?.asOf ?? null);
+
+        if (balanceResponse.ok) {
+          setFaucetBalance(balanceData.balance ?? 0);
+        }
         setTransactions(transactionsData);
         setRemainingTime(remainingData.remainingTime ?? 0);
         setTotalWithdrawn(remainingData.totalAmountWithdrawn ?? 0);
@@ -209,13 +239,18 @@ export default function DashboardPage() {
         fetch(`/api/transactions/users`)
       ]);
 
-      if (balanceResponse.ok && transactionsResponse.ok) {
+      if (balanceResponse.ok) {
         const balanceData = await balanceResponse.json();
-        const transactionsData = await transactionsResponse.json();
         setFaucetBalance(balanceData.balance);
-        setTransactions(transactionsData);
-        setIsLoading(false);
+        setBalanceStale(balanceData.stale === true);
+        setBalanceAsOf(balanceData.asOf ?? null);
       }
+
+      if (transactionsResponse.ok) {
+        setTransactions(await transactionsResponse.json());
+      }
+
+      setIsLoading(false);
     } catch (err: any) {
       setError(`Failed to process request: ${err.message}`);
       console.error('Transaction error:', err);
@@ -264,6 +299,11 @@ export default function DashboardPage() {
           value={faucetBalance}
           unit="satoshis"
           loading={isLoading}
+          note={
+            balanceStale
+              ? `Provider unavailable${balanceAsOf ? `, last updated ${new Date(balanceAsOf).toLocaleTimeString()}` : ''}`
+              : undefined
+          }
         />
         <MetricTile
           label="Withdrawn today"
