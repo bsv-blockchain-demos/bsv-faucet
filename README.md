@@ -78,6 +78,7 @@ vercel env pull
 | Variable | Description |
 |----------|-------------|
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | Google ReCAPTCHA site key (currently disabled in code) |
+| `WOC_API_KEY` | WhatsOnChain API key (server-only). Strongly recommended: without it the faucet shares the public per-IP rate limit and hits HTTP 429s |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Sign-in route (default: `/sign-in`) |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Sign-up route (default: `/sign-up`) |
 

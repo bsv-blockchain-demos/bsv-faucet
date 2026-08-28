@@ -16,6 +16,8 @@ declare global {
       readonly WEBHOOK_SECRET: string;
       // Treasury wallet private key (WIF). Server-only.
       readonly TREASURY_WALLET_WIF: string;
+      // WhatsOnChain API key. Optional; lifts the per-IP rate limit. Server-only.
+      readonly WOC_API_KEY?: string;
       // public
       readonly NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: string;
       readonly NEXT_PUBLIC_CLERK_SIGN_IN_URL: string;

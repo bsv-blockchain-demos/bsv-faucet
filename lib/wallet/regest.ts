@@ -8,6 +8,31 @@ const API_URLS = {
 const REQUEST_TIMEOUT_MS = 10_000;
 const MAX_ATTEMPTS = 3;
 const BASE_BACKOFF_MS = 250;
+// The public rate limit is per second, so a sub-second retry after a 429 just
+// burns an attempt inside the same window.
+const RATE_LIMIT_BACKOFF_MS = 1_000;
+const MAX_BACKOFF_MS = 10_000;
+
+/**
+ * WhatsOnChain authenticates with the bare API key in the Authorization header.
+ * Unauthenticated calls share a low per-IP limit, and on Vercel that IP is
+ * shared with other tenants, so without a key the faucet trips 429s under
+ * ordinary load. The key is optional so local development still works without
+ * one. Server-only: never expose it with a NEXT_PUBLIC_ prefix.
+ */
+const authHeaders = (): Record<string, string> => {
+  const apiKey = process.env.WOC_API_KEY?.trim();
+  return apiKey ? { Authorization: apiKey } : {};
+};
+
+/** Retry-After is either seconds or an HTTP date. Anything else is ignored. */
+const parseRetryAfter = (value: unknown): number | undefined => {
+  if (typeof value !== 'string' || value.trim() === '') return undefined;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+  const at = Date.parse(value);
+  return Number.isNaN(at) ? undefined : Math.max(0, at - Date.now());
+};
 
 /**
  * Error raised when a WhatsOnChain request fails. Preserves the upstream HTTP
@@ -48,7 +73,8 @@ const isRetryable = (status: number | undefined) =>
  * Issue a request against WhatsOnChain with a bounded number of retries and
  * exponential backoff with jitter. WhatsOnChain returns intermittent 5xx even
  * in normal operation, so a single failed attempt should never surface to the
- * caller as an outage.
+ * caller as an outage. Rate-limit responses honour Retry-After when present
+ * and otherwise wait at least a full limit window before trying again.
  */
 const request = async <T>(
   description: string,
@@ -64,6 +90,7 @@ const request = async <T>(
       const response = await axios.request<T>({
         timeout: REQUEST_TIMEOUT_MS,
         ...config,
+        headers: { ...authHeaders(), ...config.headers },
       });
       return response.data;
     } catch (error) {
@@ -77,8 +104,13 @@ const request = async <T>(
       }
 
       // Exponential backoff with jitter so concurrent callers do not retry in lockstep.
-      const backoff = BASE_BACKOFF_MS * 2 ** (attempt - 1);
-      await sleep(backoff + Math.random() * backoff);
+      const exponential = BASE_BACKOFF_MS * 2 ** (attempt - 1);
+      const floor = lastStatus === 429 ? RATE_LIMIT_BACKOFF_MS : 0;
+      const retryAfter = axios.isAxiosError(error)
+        ? parseRetryAfter(error.response?.headers?.['retry-after'])
+        : undefined;
+      const backoff = Math.max(exponential, floor, retryAfter ?? 0);
+      await sleep(Math.min(backoff + Math.random() * backoff, MAX_BACKOFF_MS));
     }
   }
 
