@@ -1,5 +1,6 @@
-import { fetchUser, prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { createAndSendTransaction } from '@/lib/wallet/transactions';
+import { currentUser } from '@clerk/nextjs/server';
 import { error } from 'console';
 import { NextResponse } from 'next/server';
 
@@ -9,8 +10,12 @@ export async function POST(req: Request) {
   // insert in createAndSendTransaction needs this row for its foreign key. It
   // runs after the broadcast, so without this check the coins would leave the
   // treasury, the insert would throw and nothing would count towards the limit.
-  const dbUser = await fetchUser();
-  if (!dbUser) {
+  // This is fetchUser() inlined, because the Clerk user is needed below too.
+  const clerkUser = await currentUser();
+  const dbUser = clerkUser
+    ? await prisma.user.findUnique({ where: { userId: clerkUser.id } })
+    : null;
+  if (!clerkUser || !dbUser) {
     return NextResponse.json(
       {
         error:
@@ -20,6 +25,29 @@ export async function POST(req: Request) {
     );
   }
   const userId = dbUser.userId;
+
+  // Eligibility. With email optional on the Clerk instance, someone can sign
+  // up through the Clerk widget with only a username and password: no
+  // verified email and no wallet. Enforce it here rather than trusting Clerk
+  // settings. authMethod is only ever set to wallet by the server, after a
+  // verified wallet proof.
+  const hasVerifiedEmail = clerkUser.emailAddresses.some(
+    (address) => address.verification?.status === 'verified'
+  );
+  if (dbUser.authMethod !== 'wallet' && !hasVerifiedEmail) {
+    return NextResponse.json(
+      {
+        error:
+          'Add an email address or sign in with a BSV wallet to request coins.'
+      },
+      { status: 403 }
+    );
+  }
+
+  // The per-account daily limit below is the only brake on withdrawals. A
+  // new wallet key costs nothing and gets a fresh limit, so a global daily
+  // cap, a per-address limit, a captcha and a smaller first-day allowance for
+  // wallet accounts were considered and deliberately not built.
 
   const { toAddress, amount } = await req.json();
 
