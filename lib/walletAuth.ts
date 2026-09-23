@@ -39,11 +39,11 @@ export function isIdentityKey(value: unknown): value is string {
 }
 
 /**
- * The faucet database username for a wallet account: the parity prefix
- * dropped, then the next 16 hex characters, or 32 for the long form. Clerk
- * holds no username for wallet accounts, because username sign-in is off on
- * the instance, but User.username is required and unique here. The long form
- * is the fallback when another row already holds the short one.
+ * A wallet account's username, in Clerk and in the faucet database: the
+ * parity prefix dropped, then the next 16 hex characters, or 32 for the long
+ * form. Clerk needs it as the account's identifier before it will exchange a
+ * sign-in ticket, and User.username is required and unique here. The long
+ * form is the fallback when another account already holds the short one.
  */
 export function walletUsername(
   identityKey: string,

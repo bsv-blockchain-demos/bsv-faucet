@@ -28,12 +28,20 @@ export const embeddedClerkAppearance: Appearance = {
   },
   elements: {
     rootBox: 'w-full',
-    cardBox: 'w-full shadow-none border-0',
+    // rounded-t-none: cardBox hides overflow behind a 24px corner radius, and
+    // the first label sits in its top-left corner, so the curve shaved the
+    // top off the "E" in "Email address". The top edge is invisible here,
+    // while the bottom corners still round off the footer band.
+    cardBox: 'w-full shadow-none border-0 rounded-t-none',
     // m-0: Clerk offsets the inner card by -1px, and cardBox hides overflow,
     // which shaves the left edge off the first label and input. px-1 keeps
     // the inputs' focus rings clear of the same clipping.
     card: 'w-full shadow-none border-0 bg-transparent m-0 px-1 py-0',
     header: 'hidden',
+    // Usernames are on in Clerk only so wallet accounts have an identifier
+    // for their sign-in ticket. Email sign-up does not offer one, and the
+    // field is optional, so hiding it leaves nothing unfilled.
+    formFieldRow__username: 'hidden',
     formButtonPrimary: 'rounded-full text-[15px] normal-case',
     // Links follow the brand's link colour (cyan in dark), not the primary.
     footerActionLink: 'text-link hover:text-link'
