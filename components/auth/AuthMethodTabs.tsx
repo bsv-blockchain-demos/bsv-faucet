@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react';
 import { Mail, Wallet } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
 
 export type AuthMethod = 'email' | 'wallet';
 
@@ -19,15 +18,12 @@ export function AuthMethodTabs({
   value,
   onChange,
   email,
-  wallet,
-  bodyClassName
+  wallet
 }: {
   value: AuthMethod;
   onChange: (method: AuthMethod) => void;
   email: ReactNode;
   wallet: ReactNode;
-  /** Sets the body's min-height, so the card does not jump between tabs. */
-  bodyClassName?: string;
 }) {
   return (
     <Tabs value={value} onValueChange={(v) => onChange(v as AuthMethod)}>
@@ -41,7 +37,7 @@ export function AuthMethodTabs({
           BSV Wallet
         </TabsTrigger>
       </TabsList>
-      <div className={cn('mt-6', bodyClassName)}>
+      <div className="mt-6">
         <TabsContent value="email" className="mt-0">
           {email}
         </TabsContent>
