@@ -9,24 +9,26 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { AlertCircle, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useTheme } from '@/context/ThemeContext';
+import { BsvIdentityCard } from '@/components/settings/BsvIdentityCard';
+import { WalletDeleteAccountButton } from '@/components/settings/WalletDeleteAccountButton';
 
 interface UserData {
   id: number;
   username: string;
-  email: string;
+  email: string | null;
   theme: string;
   role: string;
+  authMethod: 'email' | 'wallet';
+  identityKey: string | null;
 }
 
 export default function SettingsPage() {
@@ -52,23 +54,6 @@ export default function SettingsPage() {
 
     fetchUserData();
   }, []);
-
-  const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const username = formData.get('username') as string;
-    const email = formData.get('email') as string;
-
-    try {
-      const response = await axios.put('/api/settings', { username, email });
-      setUserData((prev) => (prev ? { ...prev, username, email } : prev));
-      alert(response.data.message);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update profile');
-    }
-  };
 
   const handleDeleteAccount = async () => {
     const confirmDelete = confirm(
@@ -106,6 +91,10 @@ export default function SettingsPage() {
       </div>
     );
 
+  // Wallet accounts have no email and no password, so those sections are
+  // hidden, and deletion is confirmed with the wallet instead.
+  const isWalletAccount = userData.authMethod === 'wallet';
+
   return (
     <div className="mx-auto max-w-[760px]">
       <h1 className="mb-[22px] font-display text-[26px] font-semibold leading-tight">
@@ -128,24 +117,21 @@ export default function SettingsPage() {
         </TabsList>
 
         <TabsContent value="profile">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile information</CardTitle>
-              <CardDescription>
-                Update your account profile information here.
-              </CardDescription>
-            </CardHeader>
-            <form onSubmit={handleUpdateProfile}>
+          {/* Nothing here is editable: username sign-in is off on the Clerk
+              instance, so there is no username to change, and email changes
+              go through Clerk. Wallet accounts have no email, so they see
+              their identity key instead. */}
+          {isWalletAccount && userData.identityKey ? (
+            <BsvIdentityCard identityKey={userData.identityKey} />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile information</CardTitle>
+                <CardDescription>
+                  The email address you sign in with.
+                </CardDescription>
+              </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    name="username"
-                    defaultValue={userData.username}
-                    required
-                  />
-                </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -153,16 +139,12 @@ export default function SettingsPage() {
                     disabled
                     name="email"
                     type="email"
-                    defaultValue={userData.email}
-                    required
+                    defaultValue={userData.email ?? ''}
                   />
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button type="submit">Update profile</Button>
-              </CardFooter>
-            </form>
-          </Card>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="appearance">
@@ -206,13 +188,23 @@ export default function SettingsPage() {
                 Deleting your account will remove all of your information from
                 our database. This cannot be undone.
               </p>
-              <button
-                type="button"
-                onClick={handleDeleteAccount}
-                className="inline-flex h-11 items-center gap-2 rounded-full border-[1.5px] border-destructive bg-transparent px-5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
-              >
-                <Trash2 className="h-4 w-4" /> Delete account
-              </button>
+              {isWalletAccount ? (
+                <WalletDeleteAccountButton
+                  onDeleted={(message) => {
+                    alert(message);
+                    router.push('/');
+                  }}
+                  onError={setError}
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleDeleteAccount}
+                  className="inline-flex h-11 items-center gap-2 rounded-full border-[1.5px] border-destructive bg-transparent px-5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                >
+                  <Trash2 className="h-4 w-4" /> Delete account
+                </button>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

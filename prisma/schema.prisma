@@ -12,7 +12,16 @@ model User {
   id              Int             @id @default(autoincrement())
   userId          String          @unique
   username        String          @unique
-  email           String          @unique
+  /// Null for wallet accounts, which have no email address. Never write '':
+  /// a second blank email would fail the unique constraint.
+  email           String?         @unique
+  /// Wallet root public key (66 hex characters) for wallet accounts. This is
+  /// the lookup key for wallet sign-in. Clerk externalId is not used because
+  /// on production it already holds each migrated user's old dev user ID.
+  identityKey     String?         @unique
+  /// Set only by the server: the wallet login route, or the Clerk webhook
+  /// copying it from publicMetadata, which only the backend can write.
+  authMethod      AuthMethod      @default(email)
   role            Role
   password        String
   theme           Theme           @default(light)
@@ -81,6 +90,20 @@ model BalanceCache {
   address   String   @id
   balance   BigInt
   updatedAt DateTime
+}
+
+/// Consumed wallet-login nonces. Replay protection only: a row is useless once
+/// expiresAt has passed, and the login route deletes expired rows as it goes.
+model AuthNonce {
+  nonce     String   @id
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
+enum AuthMethod {
+  email
+  wallet
 }
 
 enum Role {

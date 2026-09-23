@@ -3,6 +3,12 @@ import { currentUser, clerkClient } from '@clerk/nextjs/server';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { PrismaClient } from '@/prisma/generated/client/default';
+import { DELETE_ACCOUNT_ACTION } from '@/lib/walletAuth';
+import {
+  getServerWallet,
+  prismaWalletAuthStore,
+  verifyWalletProof
+} from '@/lib/walletAuthServer';
 
 const prisma = new PrismaClient();
 
@@ -24,6 +30,18 @@ const ChangePasswordSchema = z.object({
 const DeleteAccountSchema = z.object({
   password: z.string().min(8)
 });
+
+// A wallet account has no password, so it confirms deletion with a fresh
+// wallet proof for the delete-account action instead.
+const DeleteWalletAccountSchema = z.object({
+  proof: z.unknown()
+});
+
+const walletAccountHasNoPassword = () =>
+  NextResponse.json(
+    { error: 'Wallet accounts do not have a password.' },
+    { status: 400 }
+  );
 
 // Helper function to handle errors
 const handleError = (error: unknown) => {
@@ -59,6 +77,9 @@ export async function POST(request: NextRequest) {
 
     if (!userRecord) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    if (userRecord.authMethod === 'wallet') {
+      return walletAccountHasNoPassword();
     }
 
     const isCurrentPasswordValid = await bcrypt.compare(
@@ -174,7 +195,6 @@ export async function DELETE(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser();
     const data = await request.json();
-    const { password } = DeleteAccountSchema.parse(data);
 
     const userRecord = await prisma.user.findUnique({
       where: { userId: user.id }
@@ -183,6 +203,12 @@ export async function DELETE(request: NextRequest) {
     if (!userRecord) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
+
+    if (userRecord.authMethod === 'wallet') {
+      return deleteWalletAccount(user.id, userRecord.identityKey, data);
+    }
+
+    const { password } = DeleteAccountSchema.parse(data);
 
     const isPasswordValid = await bcrypt.compare(password, userRecord.password);
     if (!isPasswordValid) {
@@ -201,4 +227,33 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     return handleError(error);
   }
+}
+
+// Deletes a wallet account once the signed-in user proves, with a fresh
+// single-use proof, that they control the account's identity key. A proof
+// for another key, another action or a replayed nonce is refused.
+async function deleteWalletAccount(
+  userId: string,
+  identityKey: string | null,
+  data: unknown
+) {
+  const { proof } = DeleteWalletAccountSchema.parse(data);
+
+  const check = await verifyWalletProof(proof, DELETE_ACCOUNT_ACTION, {
+    verifier: getServerWallet(),
+    store: prismaWalletAuthStore
+  });
+  if (!check.valid || !identityKey || check.identityKey !== identityKey) {
+    return NextResponse.json(
+      { error: "Couldn't verify wallet. Please try again." },
+      { status: 401 }
+    );
+  }
+
+  await (await clerkClient()).users.deleteUser(userId);
+
+  return NextResponse.json({
+    message:
+      'Account deleted successfully in Clerk. Webhook will sync with Prisma.'
+  });
 }

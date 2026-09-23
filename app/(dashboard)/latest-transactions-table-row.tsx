@@ -2,6 +2,7 @@ import { ClientUser, ClientTransaction } from '@/lib/prisma';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { avatarInitials, truncateIdentityKey } from '@/lib/walletAuth';
 
 const LatestTransactionsTableRow = ({
   user,
@@ -41,7 +42,7 @@ const LatestTransactionsTableRow = ({
                 <Avatar className="h-8 w-8 shrink-0">
                   <AvatarImage src={transaction.user.imageUrl} />
                   <AvatarFallback className="bg-primary text-xs font-medium text-primary-foreground">
-                    {transaction.user.username?.charAt(0)?.toUpperCase()}
+                    {avatarInitials(transaction.user)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex min-w-0 flex-col">
@@ -49,7 +50,10 @@ const LatestTransactionsTableRow = ({
                     {transaction.user.username}
                   </span>
                   <span className="truncate text-[13px] text-muted-foreground">
-                    {transaction.user.email}
+                    {transaction.user.email ??
+                      (transaction.user.identityKey
+                        ? truncateIdentityKey(transaction.user.identityKey)
+                        : null)}
                   </span>
                 </div>
               </div>

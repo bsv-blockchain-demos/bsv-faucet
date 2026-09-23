@@ -17,8 +17,10 @@ export async function GET() {
     const result: Record<string, any> = {};
     result['ID'] = user.id;
     result['User ID'] = user.userId;
-    result['Email'] = user.email;
+    result['Email'] = user.email ?? '';
     result['Username'] = user.username;
+    result['Auth'] = user.authMethod === 'wallet' ? 'Wallet' : 'Email';
+    result['Identity key'] = user.identityKey ?? '';
     result['Role'] = user.role;
     result['Date registered'] = user.createdAt.toLocaleString();
     result['Withdrawn'] = user.withdrawn.toString();
