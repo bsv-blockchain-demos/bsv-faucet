@@ -63,10 +63,10 @@ export async function upsertUserFromClerk(
   const walletFields = walletFieldsFromClerk(userData);
   const name = clerkName(userData);
 
-  // A new row needs a unique username, and Clerk has none since username
-  // sign-in was turned off. Wallet accounts get the same generated name the
-  // login route gives them, with its long form as the fallback, so the row
-  // looks the same whichever of the two writes it first. Other accounts fall
+  // A new row needs a unique username, and most email accounts have none in
+  // Clerk. Wallet accounts carry the generated name the login route gives
+  // them (older ones may not yet), with its long form as the fallback, so the
+  // row looks the same whichever of the two writes it first. Other accounts fall
   // back to the full Clerk user ID, which is unique, also when their name is
   // already taken. The first 8 characters of the ID used to be the fallback,
   // but that is "user_" plus 3 characters, which collides after a few dozen

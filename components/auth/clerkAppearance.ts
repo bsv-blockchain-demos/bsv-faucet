@@ -34,6 +34,10 @@ export const embeddedClerkAppearance: Appearance = {
     // the inputs' focus rings clear of the same clipping.
     card: 'w-full shadow-none border-0 bg-transparent m-0 px-1 py-0',
     header: 'hidden',
+    // Usernames are on in Clerk only so wallet accounts have an identifier
+    // for their sign-in ticket. Email sign-up does not offer one, and the
+    // field is optional, so hiding it leaves nothing unfilled.
+    formFieldRow__username: 'hidden',
     formButtonPrimary: 'rounded-full text-[15px] normal-case',
     // Links follow the brand's link colour (cyan in dark), not the primary.
     footerActionLink: 'text-link hover:text-link'

@@ -31,6 +31,14 @@ export class UniqueViolationError extends Error {
   }
 }
 
+/** Clerk already has this username on another user. */
+export class UsernameTakenError extends Error {
+  constructor(username: string, options?: { cause?: unknown }) {
+    super(`Clerk username ${username} is taken`, options);
+    this.name = 'UsernameTakenError';
+  }
+}
+
 /** The faucet database operations wallet sign-in needs. */
 export interface WalletAuthStore {
   /**
@@ -57,13 +65,24 @@ export type WalletClerkUser = {
   id: string;
   imageUrl: string;
   externalId: string | null;
+  /** Null for wallet accounts created before they were given one. */
+  username: string | null;
 };
 
 /** The Clerk Backend API calls wallet sign-in needs. */
 export interface WalletAuthClerk {
   findUserByExternalId(externalId: string): Promise<WalletClerkUser | null>;
-  /** Throws UniqueViolationError when the external ID is already taken. */
-  createWalletUser(user: { identityKey: string }): Promise<WalletClerkUser>;
+  getUser(userId: string): Promise<WalletClerkUser>;
+  /**
+   * Throws UniqueViolationError when the external ID is already taken, and
+   * UsernameTakenError when only the username is.
+   */
+  createWalletUser(user: {
+    identityKey: string;
+    username: string;
+  }): Promise<WalletClerkUser>;
+  /** Throws UsernameTakenError when another user holds the username. */
+  setUsername(userId: string, username: string): Promise<void>;
   createSignInToken(userId: string): Promise<string>;
 }
 
@@ -102,9 +121,9 @@ export const prismaWalletAuthStore: WalletAuthStore = {
   },
 
   async upsertWalletUser({ userId, identityKey, imageUrl }) {
-    // User.username is required and unique in the faucet database, but
-    // Clerk has no usernames. Wallet rows get a generated one. The long form
-    // is the fallback if another row already holds the short one.
+    // User.username is required and unique in the faucet database. Wallet
+    // rows get the same generated name as their Clerk username, with the
+    // long form as the fallback if another row already holds the short one.
     const candidates = [
       walletUsername(identityKey, 'short'),
       walletUsername(identityKey, 'long')
@@ -150,8 +169,35 @@ function toWalletClerkUser(user: {
   id: string;
   imageUrl: string;
   externalId: string | null;
+  username: string | null;
 }): WalletClerkUser {
-  return { id: user.id, imageUrl: user.imageUrl, externalId: user.externalId };
+  return {
+    id: user.id,
+    imageUrl: user.imageUrl,
+    externalId: user.externalId,
+    username: user.username
+  };
+}
+
+/**
+ * Which unique field a Clerk error is about. External ID is checked first:
+ * when a racing sign-in has already created the user, both fields clash, and
+ * that case belongs to the retry rather than the username fallback.
+ */
+function clerkConflict(error: unknown): 'external_id' | 'username' | null {
+  if (!isClerkAPIResponseError(error)) return null;
+  const { errors } = error;
+  if (errors.some((e) => e.meta?.paramName === 'external_id')) {
+    return 'external_id';
+  }
+  if (
+    errors.some(
+      (e) => e.meta?.paramName === 'username' && e.code.endsWith('_exists')
+    )
+  ) {
+    return 'username';
+  }
+  return errors.some((e) => e.code.endsWith('_exists')) ? 'external_id' : null;
 }
 
 export async function createClerkWalletAuth(): Promise<WalletAuthClerk> {
@@ -165,7 +211,11 @@ export async function createClerkWalletAuth(): Promise<WalletAuthClerk> {
       return data[0] ? toWalletClerkUser(data[0]) : null;
     },
 
-    async createWalletUser({ identityKey }) {
+    async getUser(userId) {
+      return toWalletClerkUser(await clerk.users.getUser(userId));
+    },
+
+    async createWalletUser({ identityKey, username }) {
       try {
         const user = await clerk.users.createUser({
           // The identity key goes in externalId, which Clerk keeps unique
@@ -174,9 +224,11 @@ export async function createClerkWalletAuth(): Promise<WalletAuthClerk> {
           // production users hold their old dev user ID here, never a
           // 66-character hex key, so the two cannot collide.
           externalId: identityKey,
-          // No email and no username: the instance has username sign-in
-          // turned off, and Clerk rejects any field that is not enabled.
-          // Email must be optional on the instance for this call to work.
+          // Clerk only exchanges a sign-in ticket for a user with at least
+          // one identifier, and a wallet user has no email, so the generated
+          // username is that identifier, as on WhatsOnChain. The instance
+          // needs usernames turned on (not required) and email optional.
+          username,
           skipPasswordRequirement: true,
           publicMetadata: {
             bsvIdentityKey: identityKey,
@@ -186,17 +238,25 @@ export async function createClerkWalletAuth(): Promise<WalletAuthClerk> {
         });
         return toWalletClerkUser(user);
       } catch (error) {
-        if (
-          isClerkAPIResponseError(error) &&
-          error.errors.some(
-            (e) =>
-              e.code.endsWith('_exists') ||
-              e.meta?.paramName === 'external_id'
-          )
-        ) {
+        const conflict = clerkConflict(error);
+        if (conflict === 'external_id') {
           throw new UniqueViolationError('Clerk external ID already taken', {
             cause: error
           });
+        }
+        if (conflict === 'username') {
+          throw new UsernameTakenError(username, { cause: error });
+        }
+        throw error;
+      }
+    },
+
+    async setUsername(userId, username) {
+      try {
+        await clerk.users.updateUser(userId, { username });
+      } catch (error) {
+        if (clerkConflict(error) === 'username') {
+          throw new UsernameTakenError(username, { cause: error });
         }
         throw error;
       }
@@ -211,6 +271,51 @@ export async function createClerkWalletAuth(): Promise<WalletAuthClerk> {
       return token.token;
     }
   };
+}
+
+/**
+ * Runs a Clerk write with the wallet's short username, then with the long
+ * one if another user already holds the short one, for example an email
+ * account that picked it back when usernames were open to everyone.
+ */
+async function withWalletUsername<T>(
+  identityKey: string,
+  write: (username: string) => Promise<T>
+): Promise<T> {
+  const candidates = [
+    walletUsername(identityKey, 'short'),
+    walletUsername(identityKey, 'long')
+  ];
+  for (let i = 0; ; i++) {
+    try {
+      return await write(candidates[i]);
+    } catch (error) {
+      if (error instanceof UsernameTakenError && i < candidates.length - 1) {
+        continue;
+      }
+      throw error;
+    }
+  }
+}
+
+/**
+ * Gives a wallet account a Clerk username if it has none, and returns
+ * whether it did. Without an identifier Clerk issues the sign-in token but
+ * the browser's exchange fails with "The given token doesn't have an
+ * associated identification". Wallet accounts created before usernames were
+ * set have none.
+ */
+export async function ensureClerkUsername(
+  clerk: WalletAuthClerk,
+  userId: string,
+  identityKey: string
+): Promise<boolean> {
+  const user = await clerk.getUser(userId);
+  if (user.username) return false;
+  await withWalletUsername(identityKey, (username) =>
+    clerk.setUsername(userId, username)
+  );
+  return true;
 }
 
 /**
@@ -240,7 +345,11 @@ export async function findOrCreateWalletUser(
 
     try {
       // 3. Otherwise create the Clerk user.
-      const clerkUser = own ?? (await clerk.createWalletUser({ identityKey }));
+      const clerkUser =
+        own ??
+        (await withWalletUsername(identityKey, (username) =>
+          clerk.createWalletUser({ identityKey, username })
+        ));
 
       // 4. Write the row in this request, before the ticket is returned.
       await store.upsertWalletUser({
@@ -380,6 +489,14 @@ export async function handleWalletLogin(
       deps.store,
       deps.clerk
     );
+    // A new account got its username on creation. Anyone else is checked,
+    // which costs one Clerk read per sign-in.
+    if (
+      !isNewUser &&
+      (await ensureClerkUsername(deps.clerk, userId, identityKey))
+    ) {
+      console.info(`[wallet-auth] added a Clerk username for key ${fingerprint}…`);
+    }
     const ticket = await deps.clerk.createSignInToken(userId);
     if (isNewUser) {
       console.info(`[wallet-auth] created account for key ${fingerprint}…`);

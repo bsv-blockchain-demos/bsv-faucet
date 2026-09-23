@@ -37,9 +37,10 @@ describe('POST /api/wallet-auth/login', () => {
     expect(clerk.users).toHaveLength(1);
     const [clerkUser] = clerk.users;
     expect(ticket).toBe(`ticket_for_${clerkUser.id}`);
-    // Clerk holds the key in externalId and no username at all.
+    // Clerk holds the key in externalId, and the generated username is the
+    // identifier Clerk needs before it will exchange the ticket.
     expect(clerkUser.externalId).toBe(identityKey);
-    expect(clerkUser).not.toHaveProperty('username');
+    expect(clerkUser.username).toBe(walletUsername(identityKey));
 
     expect(Array.from(store.rows.values())).toEqual([
       {
@@ -226,6 +227,36 @@ describe('POST /api/wallet-auth/login', () => {
     expect(res.status).toBe(200);
     expect(clerk.createCalls).toBe(0);
     expect(store.rows.get(orphan.id)?.identityKey).toBe(identityKey);
+    expect(orphan.username).toBe(walletUsername(identityKey));
+  });
+
+  it('gives an existing wallet account without a Clerk username one before its ticket', async () => {
+    const { server, store, clerk, login } = setup();
+    const { wallet, identityKey } = await makeClientWallet();
+    // An account from before wallet users got a username: Clerk issued its
+    // tickets, but the browser could never exchange them.
+    const legacy = clerk.addUser({ externalId: identityKey });
+    await store.upsertWalletUser({ userId: legacy.id, identityKey, imageUrl: '' });
+
+    const res = await login({ proof: await makeProof(wallet, server.publicKey) });
+
+    expect(res.status).toBe(200);
+    expect((await res.json()).ticket).toBe(`ticket_for_${legacy.id}`);
+    expect(legacy.username).toBe(walletUsername(identityKey));
+    expect(clerk.createCalls).toBe(0);
+  });
+
+  it('falls back to the long Clerk username when another Clerk user holds the short one', async () => {
+    const { server, clerk, login } = setup();
+    const { wallet, identityKey } = await makeClientWallet();
+    const squatter = clerk.addUser({ username: walletUsername(identityKey) });
+
+    const res = await login({ proof: await makeProof(wallet, server.publicKey) });
+
+    expect(res.status).toBe(200);
+    const walletUser = clerk.users.find((u) => u.externalId === identityKey)!;
+    expect(walletUser.username).toBe(walletUsername(identityKey, 'long'));
+    expect(squatter.username).toBe(walletUsername(identityKey));
   });
 
   it('falls back to the long username when another row holds the short one', async () => {

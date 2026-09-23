@@ -2,6 +2,7 @@ import { createAuthProof } from '@bsv/auth';
 import { PrivateKey, ProtoWallet, type WalletProtocol } from '@bsv/sdk';
 import {
   UniqueViolationError,
+  UsernameTakenError,
   type WalletAuthClerk,
   type WalletAuthStore,
   type WalletClerkUser
@@ -89,7 +90,7 @@ export class FakeStore implements WalletAuthStore {
   }
 }
 
-/** In-memory Clerk with unique external IDs, like the real instance. */
+/** In-memory Clerk with unique external IDs and usernames, like the real one. */
 export class FakeClerk implements WalletAuthClerk {
   users: WalletClerkUser[] = [];
   createCalls = 0;
@@ -101,27 +102,56 @@ export class FakeClerk implements WalletAuthClerk {
     return this.users.find((u) => u.externalId === externalId) ?? null;
   }
 
-  async createWalletUser({ identityKey }: { identityKey: string }) {
+  async getUser(userId: string) {
+    await tick();
+    const user = this.users.find((u) => u.id === userId);
+    if (!user) throw new Error(`no Clerk user ${userId}`);
+    return user;
+  }
+
+  async createWalletUser({
+    identityKey,
+    username
+  }: {
+    identityKey: string;
+    username: string;
+  }) {
     this.createCalls++;
     await tick();
     if (this.users.some((u) => u.externalId === identityKey)) {
       throw new UniqueViolationError('external_id_exists');
     }
+    if (this.users.some((u) => u.username === username)) {
+      throw new UsernameTakenError(username);
+    }
     const user: WalletClerkUser = {
       id: `user_fake_${this.nextId++}`,
       imageUrl: 'https://img.clerk.com/placeholder',
-      externalId: identityKey
+      externalId: identityKey,
+      username
     };
     this.users.push(user);
     return user;
   }
 
-  /** An account made some other way, such as a migrated email user. */
+  async setUsername(userId: string, username: string) {
+    await tick();
+    if (this.users.some((u) => u.username === username && u.id !== userId)) {
+      throw new UsernameTakenError(username);
+    }
+    (await this.getUser(userId)).username = username;
+  }
+
+  /**
+   * An account made some other way: a migrated email user, or a wallet
+   * account created before wallet accounts were given a username.
+   */
   addUser(user: Partial<WalletClerkUser>) {
     const created: WalletClerkUser = {
       id: `user_fake_${this.nextId++}`,
       imageUrl: 'https://img.clerk.com/placeholder',
       externalId: null,
+      username: null,
       ...user
     };
     this.users.push(created);
@@ -129,6 +159,14 @@ export class FakeClerk implements WalletAuthClerk {
   }
 
   async createSignInToken(userId: string) {
+    // Real Clerk issues the token anyway and fails later, in the browser's
+    // ticket exchange. Failing here instead makes every login test check
+    // that a ticket only goes to an account Clerk can sign in.
+    if (!this.users.find((u) => u.id === userId)?.username) {
+      throw new Error(
+        "The given token doesn't have an associated identification for the user who created it."
+      );
+    }
     const token = `ticket_for_${userId}`;
     this.tokens.push(token);
     return token;

@@ -173,7 +173,10 @@ describe.skipIf(!isLocal)('wallet sign-in against Postgres', () => {
       if (order === 'webhook-first') {
         // The Clerk user exists and its user.created event is processed
         // before the login route writes the row.
-        const user = await clerk.createWalletUser({ identityKey });
+        const user = await clerk.createWalletUser({
+          identityKey,
+          username: 'bsv_' + identityKey.slice(2, 18)
+        });
         userId = user.id;
         await m.sync.upsertUserFromClerk('user.created', clerkUserJSON(user, identityKey));
         expect((await login(server, clerk, await makeProof(wallet, server.publicKey))).status).toBe(200);
