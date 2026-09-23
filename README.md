@@ -1,210 +1,90 @@
 # BSV Testnet Faucet
 
-A testnet faucet for the BSV blockchain. Provides developers and testers with free testnet coins for testing applications without acquiring real BSV. Built with Next.js and deployed on Vercel.
+Free testnet BSV for building and testing apps on the BSV blockchain. A faucet sends small amounts of testnet coins to your wallet so you can try transactions and integrations without buying mainnet BSV.
 
-**Live:** [bsvfaucet.com](https://bsvfaucet.com)
+**[Use the faucet at bsvfaucet.com](https://bsvfaucet.com)**
 
-## Features
+Sign in, enter a BSV testnet address, and choose an amount in satoshis. You can view your transaction history and return unused coins to the faucet's donation address.
 
-- Request testnet BSV tokens (configurable daily limit per user)
-- Treasury wallet with automatic deposit monitoring
-- Transaction history with BEEF transaction viewer
-- Admin dashboard with treasury balance, user management, and deposit history
-- Dark mode support
-- Authentication via Clerk
-- ReCAPTCHA support (optional)
+## How it works
 
-## Tech Stack
+The app sends coins from a shared treasury wallet, applies a configurable withdrawal limit per user over a rolling 24-hour period, and records transactions in PostgreSQL. An admin dashboard provides treasury and user management.
 
-| Category | Technology |
-|----------|-----------|
-| Framework | Next.js 16 (App Router, Turbopack) |
-| Language | TypeScript |
-| Auth | Clerk |
-| Database | PostgreSQL |
-| ORM | Prisma |
-| Blockchain | @bsv/sdk v2 |
-| Styling | Tailwind CSS + shadcn/ui |
-| Deployment | Vercel |
+Built with Next.js, TypeScript, Clerk for sign-in, Prisma and PostgreSQL for storage, and `@bsv/sdk` for transactions. Blockchain queries and broadcasts use WhatsOnChain.
 
-## Prerequisites
+## Run locally
 
-- Node.js >= 22
-- pnpm >= 9
-- PostgreSQL database (Vercel Postgres, Neon, Supabase, or local)
-- [Clerk](https://clerk.com) account (authentication)
-- BSV testnet wallet WIF key (treasury wallet)
+You will need Node.js 22+, pnpm 9, a PostgreSQL database, a Clerk application, and a funded BSV testnet wallet to act as the treasury.
 
-## Setup
-
-### 1. Clone and install
+### 1. Install
 
 ```sh
 git clone https://github.com/bsv-blockchain-demos/bsv-faucet.git
 cd bsv-faucet
 pnpm install
-```
-
-### 2. Configure environment variables
-
-Copy the example env file and fill in the values:
-
-```sh
 cp .env.example .env.local
 ```
 
-**If deploying to Vercel**, you can pull env variables directly:
+### 2. Configure
+
+Fill in these values in `.env.local`:
+
+| Variable                            | Purpose                                                                                       |
+| ----------------------------------- | --------------------------------------------------------------------------------------------- |
+| `POSTGRES_PRISMA_URL`               | PostgreSQL connection string for the app and migrations.                                      |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Publishable key from your Clerk application.                                                  |
+| `CLERK_SECRET_KEY`                  | Secret key from the same Clerk application.                                                   |
+| `WEBHOOK_SECRET`                    | Clerk webhook signing secret, configured in step 4.                                           |
+| `TREASURY_WALLET_WIF`               | Treasury wallet's private key in WIF format. Keep this server-side.                           |
+| `NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL`  | Per-user limit in satoshis, for example `10000000` (0.1 BSV). Defaults to `1000000` if unset. |
+| `WOC_API_KEY`                       | Optional WhatsOnChain API key, recommended to reduce shared rate-limit errors.                |
+
+Keep the sign-in and sign-up paths from [`.env.example`](.env.example). The other `POSTGRES_*` entries are unused by the current Prisma schema. reCAPTCHA is currently disabled.
+
+### 3. Set up the database and start
+
+Use a development database, then run:
 
 ```sh
-npm i -g vercel
-vercel link
-vercel env pull
-```
-
-#### Required variables
-
-| Variable | Description |
-|----------|-------------|
-| `POSTGRES_PRISMA_URL` | PostgreSQL connection string (used by Prisma) |
-| `POSTGRES_URL_NON_POOLING` | Direct PostgreSQL connection (for migrations) |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key |
-| `CLERK_SECRET_KEY` | Clerk secret key |
-| `WEBHOOK_SECRET` | Clerk webhook secret for user sync |
-| `TREASURY_WALLET_WIF` | WIF private key for the testnet treasury wallet (server-only) |
-| `NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL` | Max satoshis a user can withdraw per day (e.g. `10000000`) |
-
-#### Optional variables
-
-| Variable | Description |
-|----------|-------------|
-| `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | Google ReCAPTCHA site key (currently disabled in code) |
-| `WOC_API_KEY` | WhatsOnChain API key (server-only). Strongly recommended: without it the faucet shares the public per-IP rate limit and hits HTTP 429s |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Sign-in route (default: `/sign-in`) |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Sign-up route (default: `/sign-up`) |
-
-### 3. Set up the database
-
-Generate the Prisma client and run migrations:
-
-```sh
-pnpm prisma:migrate:dev
-```
-
-To reset the database and seed with fresh data:
-
-```sh
-pnpm prisma:db:seed
-```
-
-### 4. Run the dev server
-
-```sh
+pnpm prisma:migrate:dev --skip-seed
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+This applies migrations and generates the Prisma client. Sample seed data is not needed to run the faucet.
 
-## Available Scripts
+Open [localhost:3000](http://localhost:3000).
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start dev server with Turbopack |
-| `pnpm build` | Production build |
-| `pnpm start` | Start production server |
-| `pnpm prisma:generate` | Regenerate Prisma client |
-| `pnpm prisma:migrate:dev` | Create and run migrations |
-| `pnpm prisma:migrate:reset` | Reset database and re-run all migrations |
-| `pnpm prisma:studio` | Open Prisma Studio (database GUI) |
-| `pnpm prisma:db:seed` | Seed the database |
+### 4. Connect Clerk and fund the treasury
 
-## Project Structure
+Expose your local server through an HTTPS tunnel. In Clerk, add a webhook endpoint at `https://<your-tunnel-host>/api/webhooks/clerk` and subscribe to `user.created`, `user.updated`, and `user.deleted`. Copy its signing secret into `WEBHOOK_SECRET` and restart the dev server.
 
-```
-app/
-  (dashboard)/          # Dashboard layout and pages
-    admin/              # Admin panel (treasury, user management)
-    dashboard/          # Main faucet page (request tokens)
-    requests/           # Transaction request history
-    settings/           # User settings (appearance, security)
-    users/              # Admin user management table
-    wallet/             # Wallet page
-  api/
-    wallet/             # Wallet API routes (balance, send, monitor, generate, treasury-address)
-    transactions/       # Transaction API routes
-    webhooks/clerk/     # Clerk webhook handler
-components/
-  adminTreasuryHistory/ # Admin treasury balance and deposit history
-  ui/                   # shadcn/ui components
-context/
-  ThemeContext.tsx       # Dark/light mode provider
-lib/
-  wallet/               # BSV wallet logic (transactions, monitoring, generation)
-  depositHistory.ts     # Deposit history data source
-  prisma.ts             # Prisma client and data fetching helpers
-  utils.ts              # Shared utilities
-prisma/
-  schema.prisma         # Database schema
-  migrations/           # Migration files
-scripts/                # One-off ops scripts (Clerk id remap, id mapping)
-migration/              # Clerk dev-to-prod user migration tooling and runbook
-```
+Create an account through the app after the webhook is connected. If the account already exists, resend its `user.created` event from Clerk to create the local user record.
 
-## Database Schema
+The dashboard shows the treasury's public address under **Donate to faucet**. Send BSV testnet coins to that address before requesting a withdrawal. The faucet distributes existing coins; it does not create them.
 
-The app uses four main models:
+For admin access, run `pnpm prisma:studio` and change your user's `role` to `admin`.
 
-- **User** — Clerk-synced users with roles (`user`/`admin`), withdrawal tracking, and pause status
-- **Transaction** — Deposits and withdrawals with BEEF transaction data and UTXO outputs
-- **Wallet** — Treasury wallet management (master, hot, cold types)
-- **WalletAddress** — User-submitted withdrawal addresses
+## Development
 
-## How It Works
+| Command                               | Purpose                                           |
+| ------------------------------------- | ------------------------------------------------- |
+| `pnpm dev`                            | Start the development server.                     |
+| `pnpm build`                          | Build for production.                             |
+| `pnpm start`                          | Serve the production build.                       |
+| `pnpm prisma:migrate:dev --skip-seed` | Create and apply migrations after schema changes. |
+| `pnpm prisma:studio`                  | Browse and edit the development database.         |
 
-1. Users sign in via Clerk and request testnet BSV by providing a testnet address and amount
-2. The server validates the request against the daily withdrawal limit
-3. A transaction is created using the treasury wallet's WIF key via `@bsv/sdk`
-4. The transaction is broadcast and recorded in the database
-5. A cron-based monitor watches for incoming deposits to the treasury wallet
+Pages and API routes live in `app/`, wallet logic in `lib/wallet/`, and the database schema and migrations in `prisma/`. Include generated migrations when contributing schema changes.
 
-## Database Migrations
+For Vercel, configure the environment variables and use `pnpm vercel-build` as the build command. It generates the Prisma client, applies committed migrations, and builds the app. Point Clerk's webhook at the deployed domain.
 
-When modifying `prisma/schema.prisma`:
+Existing deployment and Clerk migration guides:
 
-```sh
-pnpm prisma:migrate:dev
-```
+- [Clerk user migration](migration/README.md)
+- [Preview validation](PREVIEW_VALIDATION.md)
+- [Clerk configuration and user ID remapping](docs/CLERK_CUTOVER.md)
+- [Production cutover and rollback](CUTOVER.md)
 
-You'll be prompted for a migration name. The migration runs against your local database immediately. Commit the generated migration file in your PR.
+## Licence
 
-See [Prisma team development workflow](https://www.prisma.io/docs/orm/prisma-migrate/workflows/team-development) for details.
-
-## Clerk dev-to-prod migration
-
-Moving from the Clerk development instance to production is documented end to end:
-
-- `migration/README.md` — import dev users into the production Clerk instance
-- `PREVIEW_VALIDATION.md` — validate the prod stack on a Vercel Preview deployment
-- `docs/CLERK_CUTOVER.md` — env scoping, webhook, and the user-id remap procedure
-- `CUTOVER.md` — the ordered cutover checklist with rollback
-
-The webhook handler lives at `/api/webhooks/clerk`. The user-id remap and id-mapping
-scripts are under `scripts/`.
-
-## Contributing
-
-1. Fork the repo
-2. Create a feature branch
-3. Make your changes (include migration scripts if schema changed)
-4. Open a PR with a description of what changed and why
-
-## Resources
-
-- [BSV SDK Documentation](https://github.com/bitcoin-sv/ts-sdk)
-- [BSV Testnet Setup](https://docs.bsvblockchain.org/network-topology/nodes/sv-node/installation/sv-node/network-environments/testnet)
-- [Clerk Documentation](https://clerk.com/docs)
-- [Prisma Documentation](https://www.prisma.io/docs)
-- [Next.js App Router](https://nextjs.org/docs/app)
-
-## License
-
-MIT
+[MIT](LICENSE.md)
