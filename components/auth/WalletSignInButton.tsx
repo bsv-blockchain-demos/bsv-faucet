@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AlertTriangle, ArrowRight, Monitor } from 'lucide-react';
+import { ArrowRight, Monitor } from 'lucide-react';
 import { useWallet } from '@/components/auth/WalletProvider';
 import type { WalletDetection } from '@/components/auth/WalletStatusNote';
 import type { WalletSignInPhase } from '@/hooks/useWalletSignIn';
@@ -65,14 +65,12 @@ function useWalletDetection(onChange?: (state: WalletDetection) => void) {
 export function WalletSignInButton({
   mode,
   phase,
-  error,
   isReady,
   onClick,
   onDetectionChange
 }: {
   mode: 'sign-in' | 'sign-up';
   phase: WalletSignInPhase;
-  error: string | null;
   isReady: boolean;
   onClick: () => void;
   onDetectionChange?: (state: WalletDetection) => void;
@@ -87,45 +85,30 @@ export function WalletSignInButton({
       : 'Continue with BSV wallet';
 
   return (
-    <div className="flex w-full flex-col gap-2.5">
-      {/* In progress: 75% opacity and a label swap, never a spinner. */}
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={busy || !isReady}
-        aria-busy={busy}
-        className="flex w-full items-center gap-3.5 rounded-2xl border-[1.5px] border-primary bg-card px-4 py-3.5 text-left transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card disabled:cursor-progress disabled:opacity-75 disabled:hover:bg-card"
+    // In progress: 75% opacity and a label swap, never a spinner.
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={busy || !isReady}
+      aria-busy={busy}
+      className="flex w-full items-center gap-3.5 rounded-2xl border-[1.5px] border-primary bg-card px-4 py-3.5 text-left transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card disabled:cursor-progress disabled:opacity-75 disabled:hover:bg-card"
+    >
+      <span
+        aria-hidden
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground"
       >
-        <span
-          aria-hidden
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground"
-        >
-          <Monitor className="h-5 w-5" />
+        <Monitor className="h-5 w-5" />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-[15px] font-medium">{label}</span>
+        <span className="text-[13px] text-muted-foreground">
+          Use a wallet on this computer
         </span>
-        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="text-[15px] font-medium">{label}</span>
-          <span className="text-[13px] text-muted-foreground">
-            Use a wallet on this computer
-          </span>
-        </span>
-        <ArrowRight
-          aria-hidden
-          className="h-[18px] w-[18px] shrink-0 text-muted-foreground"
-        />
-      </button>
-
-      {error && (
-        <p role="alert" className="flex items-start gap-2 text-sm text-negative">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          <span>{error}</span>
-        </p>
-      )}
-
-      {mode === 'sign-up' && (
-        <p className="text-[13px] text-muted-foreground">
-          No email needed. Your wallet&apos;s identity key is your account.
-        </p>
-      )}
-    </div>
+      </span>
+      <ArrowRight
+        aria-hidden
+        className="h-[18px] w-[18px] shrink-0 text-muted-foreground"
+      />
+    </button>
   );
 }

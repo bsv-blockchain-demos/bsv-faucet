@@ -28,7 +28,11 @@ export const embeddedClerkAppearance: Appearance = {
   },
   elements: {
     rootBox: 'w-full',
-    cardBox: 'w-full shadow-none border-0',
+    // rounded-t-none: cardBox hides overflow behind a 24px corner radius, and
+    // the first label sits in its top-left corner, so the curve shaved the
+    // top off the "E" in "Email address". The top edge is invisible here,
+    // while the bottom corners still round off the footer band.
+    cardBox: 'w-full shadow-none border-0 rounded-t-none',
     // m-0: Clerk offsets the inner card by -1px, and cardBox hides overflow,
     // which shaves the left edge off the first label and input. px-1 keeps
     // the inputs' focus rings clear of the same clipping.

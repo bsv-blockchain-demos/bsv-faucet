@@ -33,9 +33,13 @@ export async function fetchServerKey(): Promise<string> {
 
 export function walletErrorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
-  return /cancel|reject|denied/i.test(message)
-    ? WALLET_CANCELLED_MESSAGE
-    : WALLET_FAILED_MESSAGE;
+  if (/cancel|reject|denied/i.test(message)) return WALLET_CANCELLED_MESSAGE;
+  // The SDK throws this when no wallet answers on any substrate. Nothing was
+  // verified, so "Couldn't verify wallet" would point the user the wrong way.
+  if (/no wallet available|communication substrate/i.test(message)) {
+    return WALLET_TIMEOUT_MESSAGE;
+  }
+  return WALLET_FAILED_MESSAGE;
 }
 
 /**

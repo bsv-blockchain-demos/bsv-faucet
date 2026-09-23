@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { SignIn, SignUp, useSignIn } from '@clerk/nextjs';
+import { Info } from 'lucide-react';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { AuthMethodTabs, type AuthMethod } from '@/components/auth/AuthMethodTabs';
 import { embeddedClerkAppearance } from '@/components/auth/clerkAppearance';
@@ -9,7 +10,7 @@ import { WalletProvider } from '@/components/auth/WalletProvider';
 import { WalletSignInButton } from '@/components/auth/WalletSignInButton';
 import { WalletSigningPanel } from '@/components/auth/WalletSigningPanel';
 import {
-  WalletStatusNote,
+  WalletFeedback,
   type WalletDetection
 } from '@/components/auth/WalletStatusNote';
 import { useWalletSignIn } from '@/hooks/useWalletSignIn';
@@ -27,13 +28,14 @@ const COPY: Record<Mode, { heading: string; subtitle: string }> = {
   }
 };
 
-// Pinned to the email tab's measured height on each page (the Clerk widget
-// on development keys, including its development-mode band), so the card
-// keeps its size when switching tabs. The shorter wallet tab top-aligns and
-// leaves trailing space. Remeasure if the Clerk instance's fields change.
+// Pinned to the wallet tab's height in its usual state (no wallet detected),
+// so the card keeps its size when switching tabs. In production the wallet
+// tab is the taller of the two, as Clerk asks for an email address only. The
+// development-mode sign-in form is a few pixels taller because of its extra
+// band, which only shows locally. Remeasure if either tab's content changes.
 const BODY_MIN_HEIGHT: Record<Mode, string> = {
-  'sign-in': 'min-h-[222px]',
-  'sign-up': 'min-h-[302px]'
+  'sign-in': 'min-h-[215px]',
+  'sign-up': 'min-h-[247px]'
 };
 
 // Remembers the last tab so a returning wallet user lands on the wallet tab.
@@ -132,19 +134,37 @@ function Screen({
           )
         }
         wallet={
-          <div className="flex flex-col gap-4">
+          // Hierarchy: the action first (on sign-up after one quiet line of
+          // context), feedback on that action right under it, and a footnote
+          // set apart below a hairline, like Clerk's footer on the email tab.
+          <div className="flex flex-col">
+            {mode === 'sign-up' && (
+              <p className="mb-3 text-center text-[13px] leading-5 text-muted-foreground">
+                <span className="font-medium text-foreground">
+                  No email needed.
+                </span>{' '}
+                Your wallet&apos;s identity key is your account.
+              </p>
+            )}
             <WalletSignInButton
               mode={mode}
               phase={walletSignIn.phase}
-              error={walletSignIn.error}
               isReady={walletSignIn.isReady}
               onClick={walletSignIn.start}
               onDetectionChange={setDetection}
             />
-            <WalletStatusNote detection={detection} />
-            <p className="border-t border-border pt-4 text-center text-[13px] text-muted-foreground">
-              A wallet sign-in uses a separate faucet account from any email
-              account.
+            <div className="mt-3 flex flex-col">
+              <WalletFeedback
+                detection={detection}
+                error={walletSignIn.error}
+              />
+            </div>
+            <p className="mt-6 flex items-start gap-2 border-t border-border pt-4 text-[13px] leading-5 text-muted-foreground">
+              <Info
+                aria-hidden
+                className="mt-0.5 h-4 w-4 shrink-0"
+              />
+              <span>Wallet and email sign-ins are separate faucet accounts.</span>
             </p>
           </div>
         }
