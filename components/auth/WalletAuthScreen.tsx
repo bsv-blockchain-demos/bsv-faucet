@@ -122,8 +122,14 @@ function Screen({
         bodyClassName={BODY_MIN_HEIGHT[mode]}
         email={
           mode === 'sign-in' ? (
+            // One email flow for new and existing users: an unknown address
+            // carries on into sign-up instead of stopping at "Couldn't find
+            // your account". New accounts leave through /api/sign-up, like
+            // those from the sign-up page, so their User row is written.
             <SignIn
+              withSignUp
               fallbackRedirectUrl="/dashboard"
+              signUpForceRedirectUrl="/api/sign-up"
               appearance={embeddedClerkAppearance}
             />
           ) : (
