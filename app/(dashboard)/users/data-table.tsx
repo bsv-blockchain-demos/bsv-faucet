@@ -49,7 +49,7 @@ export function DataTable<TData, TValue>({
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 pb-5">
         <Input
-          placeholder="Filter by email…"
+          placeholder="Filter by email or identity key…"
           value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
             table.getColumn('email')?.setFilterValue(event.target.value)

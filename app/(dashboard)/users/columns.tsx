@@ -18,6 +18,7 @@ import { User } from '@/lib/prisma';
 import { useToast } from '@/hooks/use-toast';
 import { togglePauseUser, deleteUser, changeUserRole } from './actions';
 import { Role } from '@/prisma/generated/client';
+import { avatarInitials, truncateIdentityKey } from '@/lib/walletAuth';
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -36,7 +37,10 @@ export const columns: ColumnDef<User>[] = [
     )
   },
   {
-    accessorKey: 'email',
+    // Wallet accounts have no email, so the column (and the filter above the
+    // table, which targets it by id) falls back to the identity key.
+    id: 'email',
+    accessorFn: (user) => user.email ?? user.identityKey ?? '',
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -51,7 +55,7 @@ export const columns: ColumnDef<User>[] = [
         <Avatar className="h-8 w-8 shrink-0">
           <AvatarImage src={row.original.imageUrl} />
           <AvatarFallback className="bg-primary text-xs font-medium text-primary-foreground">
-            {row.original.username?.charAt(0)?.toUpperCase()}
+            {avatarInitials(row.original)}
           </AvatarFallback>
         </Avatar>
         <div className="flex min-w-0 flex-col">
@@ -59,10 +63,30 @@ export const columns: ColumnDef<User>[] = [
             {row.original.username}
           </span>
           <span className="truncate text-[13px] text-muted-foreground">
-            {row.original.email}
+            {row.original.email ??
+              (row.original.identityKey
+                ? truncateIdentityKey(row.original.identityKey)
+                : null)}
           </span>
         </div>
       </div>
+    )
+  },
+  {
+    accessorKey: 'authMethod',
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Auth
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <Badge variant="muted">
+        {row.original.authMethod === 'wallet' ? 'Wallet' : 'Email'}
+      </Badge>
     )
   },
   {

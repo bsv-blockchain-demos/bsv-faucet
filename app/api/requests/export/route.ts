@@ -1,6 +1,7 @@
 import { fetchUser, fetchTransactions } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { stringify as csvStringifySync } from 'csv-stringify/sync';
+import { truncateIdentityKey } from '@/lib/walletAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,8 +19,13 @@ export async function GET() {
     result['Tx ID'] = transaction.txid;
     result['Date'] = transaction.date.toLocaleString();
     if (user.role === 'admin' && transaction.user) {
-      result['Account'] =
-        `${transaction.user.username} <${transaction.user.email}>`;
+      // Wallet accounts have no email: show a truncated identity key.
+      const contact =
+        transaction.user.email ??
+        (transaction.user.identityKey
+          ? `wallet ${truncateIdentityKey(transaction.user.identityKey)}`
+          : '');
+      result['Account'] = `${transaction.user.username} <${contact}>`;
     }
     result['Beef Tx'] = transaction.beefTx;
     result['Tx Type'] = transaction.txType;

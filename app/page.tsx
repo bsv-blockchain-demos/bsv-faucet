@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Zap, SlidersHorizontal, RefreshCw } from 'lucide-react';
 import { BsvLogo } from '@/components/icons';
 import { ThemeToggle } from './(dashboard)/theme-toggle';
+import { WALLET_AUTH_ENABLED } from '@/lib/walletAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +35,9 @@ const steps = [
   {
     n: '01',
     title: 'Sign in',
-    body: 'Create an account or sign in with your email. It takes less than a minute.'
+    body: WALLET_AUTH_ENABLED
+      ? 'Create an account or sign in with your email or a BSV wallet. It takes less than a minute.'
+      : 'Create an account or sign in with your email. It takes less than a minute.'
   },
   {
     n: '02',
