@@ -1,10 +1,26 @@
-import { prisma } from '@/lib/prisma';
+import { fetchUser, prisma } from '@/lib/prisma';
 import { createAndSendTransaction } from '@/lib/wallet/transactions';
-import { currentUser } from '@clerk/nextjs/server';
 import { error } from 'console';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
+  // Refuse before anything is broadcast when the signed-in user has no User
+  // row. The daily limit is counted from Transaction rows, and the Transaction
+  // insert in createAndSendTransaction needs this row for its foreign key. It
+  // runs after the broadcast, so without this check the coins would leave the
+  // treasury, the insert would throw and nothing would count towards the limit.
+  const dbUser = await fetchUser();
+  if (!dbUser) {
+    return NextResponse.json(
+      {
+        error:
+          'Your faucet account is not ready yet. Please try again in a minute.'
+      },
+      { status: 409 }
+    );
+  }
+  const userId = dbUser.userId;
+
   const { toAddress, amount } = await req.json();
 
   if (!toAddress || !amount) {
@@ -22,9 +38,6 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-
-  const user = await currentUser();
-  const userId = user?.id;
 
   try {
     const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);

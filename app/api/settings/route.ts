@@ -117,7 +117,10 @@ export async function PATCH(request: NextRequest) {
     const data = await request.json();
     const validatedData = UpdateThemeSchema.parse(data);
 
-    (await clerkClient()).users.updateUser(user.id, {
+    // updateUserMetadata merges into publicMetadata. updateUser would replace
+    // the whole object and delete every other key stored there, such as a
+    // wallet user's bsvIdentityKey and authMethod.
+    await (await clerkClient()).users.updateUserMetadata(user.id, {
       publicMetadata: { theme: validatedData.theme }
     });
 
