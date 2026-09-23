@@ -30,22 +30,6 @@ const COPY: Record<Mode, { heading: string; subtitle: string }> = {
   }
 };
 
-// Pinned to the wallet tab's height in its usual state (no wallet detected),
-// so the card keeps its size when switching tabs. In production the wallet
-// tab is the taller of the two, as Clerk asks for an email address only. The
-// development-mode sign-in form is a few pixels taller because of its extra
-// band, which only shows locally. Remeasure if either tab's content changes.
-// With QR sign-in on, the wallet tab also holds the phone card and its gap.
-const BODY_MIN_HEIGHT: Record<Mode, string> = WALLET_RELAY_ENABLED
-  ? {
-      'sign-in': 'min-h-[302px]',
-      'sign-up': 'min-h-[334px]'
-    }
-  : {
-      'sign-in': 'min-h-[215px]',
-      'sign-up': 'min-h-[247px]'
-    };
-
 // Remembers the last tab so a returning wallet user lands on the wallet tab.
 const METHOD_STORAGE_KEY = 'bsv-faucet.auth-method';
 
@@ -127,7 +111,6 @@ function Screen({
       <AuthMethodTabs
         value={method}
         onChange={chooseMethod}
-        bodyClassName={BODY_MIN_HEIGHT[mode]}
         email={
           mode === 'sign-in' ? (
             // One email flow for new and existing users: an unknown address

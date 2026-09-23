@@ -4,7 +4,9 @@ import type { ReactNode } from 'react';
 export function AuthPageShell({ children }: { children: ReactNode }) {
   return (
     <div className="relative flex min-h-screen flex-col bg-background p-6">
-      <div className="flex flex-1 flex-col items-center justify-center">
+      {/* Top-anchored rather than centred: the card's height follows the
+          active tab, so centring would move the tabs under the cursor. */}
+      <div className="flex flex-1 flex-col items-center justify-start pt-[10vh]">
         {children}
       </div>
       <footer className="pt-6 text-center text-[13px] text-muted-foreground">
