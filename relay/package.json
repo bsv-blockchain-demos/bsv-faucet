@@ -1,0 +1,31 @@
+{
+  "name": "bsv-faucet-relay",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pairing relay for phone wallet sign-in on the BSV Faucet",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "dev": "node --env-file=.env --watch --experimental-strip-types src/server.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@bsv/sdk": "^2.7.1",
+    "@bsv/wallet-relay": "0.5.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "qrcode": "^1.5.4",
+    "ws": "^8.21.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.19.0",
+    "@types/qrcode": "^1.5.6",
+    "typescript": "^5.9.3"
+  }
+}
