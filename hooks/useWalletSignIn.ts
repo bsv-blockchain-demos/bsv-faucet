@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSignIn } from '@clerk/nextjs';
-import { createAuthProof } from '@bsv/auth';
-import { useWallet } from '@/components/auth/WalletProvider';
-import { AUTH_PROTOCOL, LOGIN_ACTION } from '@/lib/walletAuth';
+import type { ProofSignerWallet } from '@bsv/auth';
+import { useOptionalWallet } from '@/components/auth/WalletProvider';
+import { signInWithWallet } from '@/lib/walletSignInFlow';
+
+export { fetchServerKey } from '@/lib/walletSignInFlow';
 
 /**
  * idle: nothing in flight.
@@ -21,15 +23,8 @@ export const WALLET_TIMEOUT_MESSAGE =
   'Could not connect to your wallet. Make sure your BSV wallet is running.';
 export const WALLET_CANCELLED_MESSAGE =
   'Sign-in cancelled. Try again or use email.';
-export const WALLET_FAILED_MESSAGE = "Couldn't verify wallet. Please try again.";
-
-/** The faucet's auth public key, which the wallet signs its proof towards. */
-export async function fetchServerKey(): Promise<string> {
-  const res = await fetch('/api/wallet-auth/server-key');
-  if (!res.ok) throw new Error(`server-key ${res.status}`);
-  const { publicKey } = (await res.json()) as { publicKey: string };
-  return publicKey;
-}
+export const WALLET_FAILED_MESSAGE =
+  "Couldn't verify wallet. Please try again.";
 
 export function walletErrorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
@@ -43,11 +38,23 @@ export function walletErrorMessage(error: unknown): string {
 }
 
 /**
- * Signs a proof with the user's wallet, exchanges it at the login route for a
- * Clerk sign-in ticket, and starts an ordinary Clerk session from it.
+ * Runs the wallet sign-in flow (lib/walletSignInFlow.ts) with phases, a
+ * prompt timeout and error copy, then navigates to redirectTo.
+ *
+ * The wallet comes from the surrounding WalletProvider by default (a wallet
+ * on this computer). Pass `wallet` to sign in with another one, such as the
+ * relay's proxy for a phone paired by QR code; it is read when start() runs,
+ * so it may be null until the phone connects.
  */
-export function useWalletSignIn({ redirectTo }: { redirectTo: string }) {
-  const wallet = useWallet();
+export function useWalletSignIn({
+  redirectTo,
+  wallet: walletOverride
+}: {
+  redirectTo: string;
+  wallet?: ProofSignerWallet | null;
+}) {
+  const contextWallet = useOptionalWallet();
+  const wallet = walletOverride ?? contextWallet;
   const router = useRouter();
   const { isLoaded, signIn, setActive } = useSignIn();
 
@@ -62,7 +69,7 @@ export function useWalletSignIn({ redirectTo }: { redirectTo: string }) {
   useEffect(() => () => void attemptRef.current++, []);
 
   const start = useCallback(async () => {
-    if (!isLoaded || !signIn) return;
+    if (!isLoaded || !signIn || !wallet) return;
     const attempt = ++attemptRef.current;
     const abandoned = () => attemptRef.current !== attempt;
 
@@ -77,38 +84,13 @@ export function useWalletSignIn({ redirectTo }: { redirectTo: string }) {
     }, PROMPT_TIMEOUT_MS);
 
     try {
-      const serverKey = await fetchServerKey();
-      // Ask for the identity key on its own first. This is where a wallet
-      // that is closed or unapproved stalls, and checking afterwards means a
-      // wallet that answers after the timeout is not then asked to sign.
-      await wallet.getPublicKey({ identityKey: true });
-      if (abandoned()) return;
-      const proof = await createAuthProof({
+      const outcome = await signInWithWallet({
         wallet,
-        counterparty: serverKey,
-        action: LOGIN_ACTION,
-        protocol: AUTH_PROTOCOL
+        clerk: { signIn, setActive },
+        abandoned,
+        onVerifying: () => setPhase('verifying')
       });
-      if (abandoned()) return;
-      setPhase('verifying');
-
-      const res = await fetch('/api/wallet-auth/login', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ proof })
-      });
-      if (!res.ok) throw new Error(`wallet-login ${res.status}`);
-      const { ticket } = (await res.json()) as { ticket: string };
-      if (abandoned()) return;
-
-      const result = await signIn.create({ strategy: 'ticket', ticket });
-      if (result.status !== 'complete' || !result.createdSessionId) {
-        throw new Error(`ticket sign-in ended as ${result.status}`);
-      }
-      await setActive({ session: result.createdSessionId });
-      if (abandoned()) return;
-
-      router.push(redirectTo);
+      if (outcome === 'done') router.push(redirectTo);
     } catch (err) {
       console.error('[wallet-login] flow failed:', err);
       if (abandoned()) return;

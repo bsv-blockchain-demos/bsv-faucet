@@ -38,6 +38,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
 export function useWallet(): WalletClient {
   const wallet = useContext(WalletContext);
-  if (!wallet) throw new Error('useWallet must be used inside <WalletProvider>');
+  if (!wallet)
+    throw new Error('useWallet must be used inside <WalletProvider>');
   return wallet;
+}
+
+/**
+ * The provider's wallet, or null outside one. For code that can take its
+ * wallet from elsewhere, such as the sign-in hook on the QR page, where the
+ * wallet is a phone reached through the relay and no local one is wanted.
+ */
+export function useOptionalWallet(): WalletClient | null {
+  return useContext(WalletContext);
 }
