@@ -7,6 +7,7 @@ import { AuthCard } from '@/components/auth/AuthCard';
 import { AuthMethodTabs, type AuthMethod } from '@/components/auth/AuthMethodTabs';
 import { embeddedClerkAppearance } from '@/components/auth/clerkAppearance';
 import { WalletProvider } from '@/components/auth/WalletProvider';
+import { WalletRelayQrButton } from '@/components/auth/WalletRelayQrButton';
 import { WalletSignInButton } from '@/components/auth/WalletSignInButton';
 import { WalletSigningPanel } from '@/components/auth/WalletSigningPanel';
 import {
@@ -14,6 +15,7 @@ import {
   type WalletDetection
 } from '@/components/auth/WalletStatusNote';
 import { useWalletSignIn } from '@/hooks/useWalletSignIn';
+import { WALLET_RELAY_ENABLED } from '@/lib/walletRelay';
 
 type Mode = 'sign-in' | 'sign-up';
 
@@ -33,10 +35,16 @@ const COPY: Record<Mode, { heading: string; subtitle: string }> = {
 // tab is the taller of the two, as Clerk asks for an email address only. The
 // development-mode sign-in form is a few pixels taller because of its extra
 // band, which only shows locally. Remeasure if either tab's content changes.
-const BODY_MIN_HEIGHT: Record<Mode, string> = {
-  'sign-in': 'min-h-[215px]',
-  'sign-up': 'min-h-[247px]'
-};
+// With QR sign-in on, the wallet tab also holds the phone card and its gap.
+const BODY_MIN_HEIGHT: Record<Mode, string> = WALLET_RELAY_ENABLED
+  ? {
+      'sign-in': 'min-h-[302px]',
+      'sign-up': 'min-h-[334px]'
+    }
+  : {
+      'sign-in': 'min-h-[215px]',
+      'sign-up': 'min-h-[247px]'
+    };
 
 // Remembers the last tab so a returning wallet user lands on the wallet tab.
 const METHOD_STORAGE_KEY = 'bsv-faucet.auth-method';
@@ -159,6 +167,11 @@ function Screen({
               onClick={walletSignIn.start}
               onDetectionChange={setDetection}
             />
+            {WALLET_RELAY_ENABLED && (
+              <div className="mt-3">
+                <WalletRelayQrButton mode={mode} redirectTo={redirectTo} />
+              </div>
+            )}
             <div className="mt-3 flex flex-col">
               <WalletFeedback
                 detection={detection}

@@ -29,6 +29,9 @@ importers:
       '@bsv/sdk':
         specifier: ^2.7.1
         version: 2.7.1
+      '@bsv/wallet-relay':
+        specifier: 0.5.0
+        version: 0.5.0(@bsv/sdk@2.7.1)(react@18.3.1)
       '@clerk/nextjs':
         specifier: ^6.39.6
         version: 6.39.6(next@16.2.11(@types/node@22.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -214,6 +217,26 @@ packages:
   '@bsv/sdk@2.7.1':
     resolution: {integrity: sha512-1dcvOwCVGZz3A5FTJeOil1MALp2iQ1bTrZ8C9v97CC26sd8t0+Y3bFP39Rw/q0zmcbh6c+ZkIt6tKfvje+pD2A==}
     engines: {node: '>=22'}
+
+  '@bsv/wallet-relay@0.5.0':
+    resolution: {integrity: sha512-l8oXt/XO/ZGypwDL+KMYE5d7GAuNqupqhCfu7ZF60OY6FpTjBgdBR9Wspvw1dF20XGPo4pq4GvntfxOBhlkQ6A==}
+    engines: {node: '>=22'}
+    hasBin: true
+    peerDependencies:
+      '@bsv/sdk': ^2.4.1
+      '@types/express': '>=4.17.0 <6'
+      express: '>=4.18.0 <6'
+      qrcode: '>=1.5.0'
+      react: '>=17.0.0'
+    peerDependenciesMeta:
+      '@types/express':
+        optional: true
+      express:
+        optional: true
+      qrcode:
+        optional: true
+      react:
+        optional: true
 
   '@clerk/backend@2.33.6':
     resolution: {integrity: sha512-5foMmTHEQFt4mDv7AN0RDwUHZhGcg/JYe5hnl9SU/LFS8ZHY29Z2HDtIBmzKgjRfOJTMKj1AM81LgK2UFsGm9Q==}
@@ -2278,6 +2301,18 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
+  ws@8.21.3:
+    resolution: {integrity: sha512-201TZ/kPWxoPr/OKWjquZR1SWKXcvxdH+e1xrx89b3YbmzLMFCLfnaG1HFIgWzJOEWZ7MvpK++odZufgYR50Rw==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   yaml@2.8.3:
     resolution: {integrity: sha512-AvbaCLOO2Otw/lW5bmh9d/WEdcDFdQp2Z2ZUH3pX9U2ihyUY0nvLv7J6TrWowklRGPYbB/IuIMfYgxaCPg5Bpg==}
     engines: {node: '>= 14.6'}
@@ -2299,6 +2334,16 @@ snapshots:
       '@bsv/sdk': 2.7.1
 
   '@bsv/sdk@2.7.1': {}
+
+  '@bsv/wallet-relay@0.5.0(@bsv/sdk@2.7.1)(react@18.3.1)':
+    dependencies:
+      '@bsv/sdk': 2.7.1
+      ws: 8.21.3
+    optionalDependencies:
+      react: 18.3.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   '@clerk/backend@2.33.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -4121,6 +4166,8 @@ snapshots:
     dependencies:
       siginfo: 2.0.0
       stackback: 0.0.2
+
+  ws@8.21.3: {}
 
   yaml@2.8.3: {}
 

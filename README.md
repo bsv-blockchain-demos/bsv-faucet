@@ -38,6 +38,8 @@ Fill in these values in `.env.local`:
 | `TREASURY_WALLET_WIF`               | Treasury wallet's private key in WIF format. Keep this server-side.                           |
 | `NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL`  | Per-user limit in satoshis, for example `10000000` (0.1 BSV). Defaults to `1000000` if unset. |
 | `WOC_API_KEY`                       | Optional WhatsOnChain API key, recommended to reduce shared rate-limit errors.                |
+| `NEXT_PUBLIC_WALLET_AUTH_ENABLED`   | `true` adds the BSV Wallet tab to the sign-in and sign-up pages. Needs `FAUCET_AUTH_PRIVATE_KEY`. |
+| `NEXT_PUBLIC_WALLET_RELAY_ENABLED`  | `true` adds "Connect with phone via QR code" to the wallet tab. Needs `WALLET_RELAY_URL` and the relay in [`relay/`](relay/README.md). |
 
 Keep the sign-in and sign-up paths from [`.env.example`](.env.example). The other `POSTGRES_*` entries are unused by the current Prisma schema. reCAPTCHA is currently disabled.
 
@@ -75,6 +77,8 @@ For admin access, run `pnpm prisma:studio` and change your user's `role` to `adm
 | `pnpm prisma:studio`                  | Browse and edit the development database.         |
 
 Pages and API routes live in `app/`, wallet logic in `lib/wallet/`, and the database schema and migrations in `prisma/`. Include generated migrations when contributing schema changes.
+
+Phone wallet sign-in by QR code needs the pairing relay in [`relay/`](relay/README.md), a separate always-on service deployed on Railway. Its README covers running it locally and deploying it.
 
 For Vercel, configure the environment variables and use `pnpm vercel-build` as the build command. It generates the Prisma client, applies committed migrations, and builds the app. Point Clerk's webhook at the deployed domain.
 

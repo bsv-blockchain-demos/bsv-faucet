@@ -30,6 +30,7 @@
   "dependencies": {
     "@bsv/auth": "0.1.4",
     "@bsv/sdk": "^2.7.1",
+    "@bsv/wallet-relay": "0.5.0",
     "@clerk/nextjs": "^6.39.6",
     "@hookform/resolvers": "^3.9.1",
     "@prisma/client": "^5.22.0",
@@ -104,6 +105,13 @@
       "postcss": ">=8.5.23",
       "sharp": ">=0.35.3",
       "uuid": ">=11.1.1"
+    },
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "express",
+        "@types/express",
+        "qrcode"
+      ]
     }
   },
   "packageManager": "pnpm@9.12.2+sha512.22721b3a11f81661ae1ec68ce1a7b879425a1ca5b991c975b074ac220b187ce56c708fe5db69f4c962c989452eee76c82877f4ee80f474cebd61ee13461b6228"

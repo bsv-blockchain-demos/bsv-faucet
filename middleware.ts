@@ -9,7 +9,12 @@ const isPublicRoute = createRouteMatcher([
   // Wallet sign-in: the login and server-key routes are called while signed
   // out. Without this, auth.protect() bounces the login request to /sign-in
   // and nobody can sign in with a wallet.
-  '/api/wallet-auth(.*)'
+  '/api/wallet-auth(.*)',
+  // Phone wallet sign-in: the QR page, the browser's path to the relay, and
+  // the session lookup the phone makes after scanning. All while signed out.
+  '/sign-in-mobile(.*)',
+  '/wallet-relay(.*)',
+  '/api/session(.*)'
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

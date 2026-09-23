@@ -22,6 +22,10 @@ declare global {
       // sign-in proofs towards its public key. A dedicated key, never the
       // treasury key. Server-only.
       readonly FAUCET_AUTH_PRIVATE_KEY?: string;
+      // Phone wallet sign-in: the relay service's HTTPS base URL, for example
+      // https://relay.bsvfaucet.com. Read by next.config.ts at build time to
+      // set up the rewrites that put the relay behind the faucet's origin.
+      readonly WALLET_RELAY_URL?: string;
       // public
       readonly NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: string;
       readonly NEXT_PUBLIC_CLERK_SIGN_IN_URL: string;
@@ -30,6 +34,9 @@ declare global {
       readonly NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL: string;
       // 'true' shows the BSV wallet tab and enables the wallet-auth routes.
       readonly NEXT_PUBLIC_WALLET_AUTH_ENABLED?: string;
+      // 'true' shows the "Connect with phone via QR code" card and enables
+      // the /sign-in-mobile page. Needs WALLET_RELAY_URL as well.
+      readonly NEXT_PUBLIC_WALLET_RELAY_ENABLED?: string;
       // Domain passed to WalletClient and shown in wallet prompts. Defaults
       // to the page's own host when unset.
       readonly NEXT_PUBLIC_WALLET_ORIGINATOR?: string;
