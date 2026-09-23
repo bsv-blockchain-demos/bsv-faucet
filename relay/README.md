@@ -40,14 +40,24 @@ pnpm dev
 
 Then in the app's `.env.local` set `NEXT_PUBLIC_WALLET_RELAY_ENABLED=true` and `WALLET_RELAY_URL=http://localhost:3021`, and set the relay's `ORIGIN` to the app's local URL. The QR page at `/sign-in-mobile` will show a code, but a real phone cannot pair with a plain `http://` origin: BSV Browser only accepts HTTPS origins, with localhost exempt for same-device development. To pair a phone locally, put the app behind an HTTPS tunnel and use the tunnel's URL as `ORIGIN`.
 
-## Deploy on Railway
+## Deployment on Railway
 
-1. In Railway, create a service from the `bsv-faucet` GitHub repository and set its root directory to `relay`. `relay/railway.json` selects the Dockerfile, one replica and the `/health` check.
-2. Set the variables above. `RELAY_URL` is `wss://relay.bsvfaucet.com` and `ORIGIN` is `https://bsvfaucet.com`.
-3. Add the custom domain `relay.bsvfaucet.com` to the service and create the CNAME it asks for. The faucet's DNS is on Vercel's nameservers, so the record goes in the Vercel dashboard under the domain. Railway issues the certificate.
-4. In Vercel, set `WALLET_RELAY_URL=https://relay.bsvfaucet.com` for production. It is read at build time, so redeploy afterwards. Leave `NEXT_PUBLIC_WALLET_RELAY_ENABLED` unset until a real phone has paired against production, then set it to `true` and redeploy.
+The relay runs as the service `relay` in the project `bsv-faucet-relay` in the BSV Blockchain workspace on Railway, at `relay.bsvfaucet.com`. `relay/railway.json` selects the Dockerfile, one replica and the `/health` check. The service is deployed by uploading this directory with the Railway CLI rather than from GitHub, so a change to the relay is not live until someone runs the deploy.
 
-Check the service with `curl https://relay.bsvfaucet.com/health` and `curl https://bsvfaucet.com/api/session/nonexistent`, which should answer `{"ok":true}` and a 404 from the relay respectively.
+To deploy the current checkout, from the repository root:
+
+```sh
+railway link --workspace "BSV Blockchain" --project bsv-faucet-relay --service relay
+railway up relay --path-as-root --service relay --ci
+```
+
+The first command links the checkout to the service once. The second uploads `relay/` as the build root and streams the build log. Afterwards `railway logs --service relay` should show `[relay] listening`, and `curl https://relay.bsvfaucet.com/health` should answer `{"ok":true}`.
+
+The variables above are set on the service in Railway. `RELAY_URL` is `wss://relay.bsvfaucet.com` and `ORIGIN` is `https://bsvfaucet.com`. The private key was generated once and piped straight into the service variable; it exists nowhere else, so if it is ever lost, generate a new one and set it again, which only breaks pairings in flight.
+
+The DNS record for `relay.bsvfaucet.com` is a CNAME to the service's Railway hostname, held in Vercel DNS with the rest of `bsvfaucet.com`. Railway issues and renews the certificate.
+
+On the Vercel side, `WALLET_RELAY_URL=https://relay.bsvfaucet.com` is set for Production and Preview. It is read at build time, so a deployment after the change is needed for the rewrites to exist. `NEXT_PUBLIC_WALLET_RELAY_ENABLED` stays unset until a real phone has paired, then it is set to `true` and the app redeployed.
 
 Redeploys restart the process and end any pairing in progress; users see "Your phone disconnected" and can show a new code. Sessions are not persisted, which is fine, because a pairing only has to live as long as one sign-in.
 
