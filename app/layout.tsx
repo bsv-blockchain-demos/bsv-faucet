@@ -1,7 +1,7 @@
 import { Toaster } from '@/components/ui/toaster';
 import { ClerkProvider } from '@clerk/nextjs';
 import './globals.css';
-import { Analytics } from '@vercel/analytics/react';
+import { Analytics } from '@vercel/analytics/next';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { Noto_Sans } from 'next/font/google';
 
@@ -39,9 +39,9 @@ export default function RootLayout({
             {children}
             <Toaster />
           </ThemeProvider>
+          <Analytics />
         </body>
       </html>
-      <Analytics />
     </ClerkProvider>
   );
 }

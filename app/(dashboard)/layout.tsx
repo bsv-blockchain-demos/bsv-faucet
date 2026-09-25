@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Home, List, Settings, Shield, Users2 } from 'lucide-react';
 
-import { Analytics } from '@vercel/analytics/react';
 import { User } from './user';
 import { BsvLogo } from '@/components/icons';
 import Providers from './providers';
@@ -68,7 +67,6 @@ export default async function DashboardLayout({
           </main>
         </div>
       </div>
-      <Analytics />
     </Providers>
   );
 }
