@@ -5,13 +5,9 @@ import {
   readCachedBalance,
   writeCachedBalance,
 } from '@/lib/wallet/balanceCache';
-import { ProviderError, getUTXOs } from '@/lib/wallet/regest';
+import { ProviderError, getBalance } from '@/lib/wallet/regest';
 import { PrivateKey } from '@bsv/sdk';
 import { NextResponse } from 'next/server';
-
-interface UTXO {
-  value: number;
-}
 
 export const dynamic = 'force-dynamic';
 
@@ -44,8 +40,9 @@ export async function GET() {
   }
 
   try {
-    const utxos: UTXO[] = await getUTXOs(address);
-    const balance = utxos.reduce((acc, utxo) => acc + utxo.value, 0);
+    // The UTXO endpoint pages at 1000 and the treasury holds far more than
+    // that, so summing UTXOs undercounts. The balance endpoint is exact.
+    const balance = await getBalance(address);
     const entry = await writeCachedBalance(address, balance);
 
     return balanceResponse({ balance, asOf: entry.fetchedAt });

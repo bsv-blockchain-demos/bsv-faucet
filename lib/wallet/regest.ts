@@ -140,6 +140,19 @@ export const getUTXOs = async (
   return Array.isArray(data?.result) ? data.result : [];
 };
 
+/** Confirmed plus unconfirmed balance in satoshis, in a single request. */
+export const getBalance = async (
+  address: string,
+  network: 'testnet' | 'mainnet' = 'testnet'
+): Promise<number> => {
+  const apiUrl = API_URLS[network];
+  const data = await request<{ confirmed?: number; unconfirmed?: number }>(
+    'Error fetching balance',
+    { method: 'GET', url: `${apiUrl}/address/${address}/balance` }
+  );
+  return (data.confirmed ?? 0) + (data.unconfirmed ?? 0);
+};
+
 export const broadcastTransaction = async (
   rawTx: string,
   network: 'testnet' | 'mainnet' = 'testnet'
