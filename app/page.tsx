@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Zap, SlidersHorizontal, RefreshCw } from 'lucide-react';
+import { Zap, SlidersHorizontal, RefreshCw, Github } from 'lucide-react';
 import { BsvLogo } from '@/components/icons';
 import { ThemeToggle } from './(dashboard)/theme-toggle';
 import { WALLET_AUTH_ENABLED } from '@/lib/walletAuth';
@@ -261,6 +261,16 @@ export default function LandingPage() {
               className="text-sm font-semibold text-link hover:underline"
             >
               BSV Association
+            </a>
+            <a
+              href="https://github.com/bsv-blockchain-demos/bsv-faucet"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="View source on GitHub"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Github className="h-[18px] w-[18px]" aria-hidden />
+              <span className="sr-only">View source on GitHub</span>
             </a>
           </div>
         </div>
