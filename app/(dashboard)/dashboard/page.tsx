@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Timer, AlertTriangle, CheckCircle2, Copy } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { TxTypeBadge } from '@/components/tx-type-badge';
 
 interface Transaction {
   id: number;
@@ -470,7 +471,7 @@ export default function DashboardPage() {
                     {Number(tx.amount).toLocaleString()}
                   </div>
                   <div>
-                    <Badge variant="muted">{tx.txType}</Badge>
+                    <TxTypeBadge txType={tx.txType} />
                   </div>
                   <div>
                     <a

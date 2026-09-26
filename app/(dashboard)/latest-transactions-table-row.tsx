@@ -1,9 +1,9 @@
 import { ClientUser, ClientTransaction } from '@/lib/prisma';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { avatarInitials, truncateIdentityKey } from '@/lib/walletAuth';
 import { Wallet } from 'lucide-react';
+import { TxTypeBadge } from '@/components/tx-type-badge';
 
 const LatestTransactionsTableRow = ({
   user,
@@ -89,7 +89,7 @@ const LatestTransactionsTableRow = ({
         )}
       </TableCell>
       <TableCell>
-        <Badge variant="muted">{transaction.txType}</Badge>
+        <TxTypeBadge txType={transaction.txType} />
       </TableCell>
       <TableCell className="font-medium tabular-nums">
         {transaction.amount.toLocaleString()}
