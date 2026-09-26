@@ -3,6 +3,7 @@ import { TableRow, TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { avatarInitials, truncateIdentityKey } from '@/lib/walletAuth';
+import { Wallet } from 'lucide-react';
 
 const LatestTransactionsTableRow = ({
   user,
@@ -33,9 +34,21 @@ const LatestTransactionsTableRow = ({
       {user.role === 'admin' && (
         <TableCell>
           {isDeposit ? (
-            <span className="text-muted-foreground">
-              Admin · Treasury Wallet
-            </span>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  <Wallet className="h-4 w-4" aria-hidden />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex min-w-0 flex-col">
+                <span className="truncate font-medium leading-tight">
+                  Treasury Wallet
+                </span>
+                <span className="truncate text-[13px] text-muted-foreground">
+                  Admin
+                </span>
+              </div>
+            </div>
           ) : (
             transaction.user && (
               <div className="flex min-w-0 items-center gap-2.5">
