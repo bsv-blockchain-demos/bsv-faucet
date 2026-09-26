@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from './button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface TablePaginationProps {
@@ -24,33 +23,55 @@ export function TablePagination({
   const end = Math.min((page + 1) * pageSize, totalItems);
 
   return (
-    <div className="flex items-center justify-between px-2 py-4">
-      <div className="text-sm text-muted-foreground">
+    <div className="flex items-center justify-between gap-4 px-1 pt-4">
+      <div className="text-[13px] tabular-nums text-muted-foreground">
         Showing {start}-{end} of {totalItems}
       </div>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
+      <div className="flex items-center gap-1">
+        <PageButton
+          label="Previous page"
           onClick={() => onPageChange(page - 1)}
           disabled={page === 0}
         >
-          <ChevronLeft className="h-4 w-4" />
-          Previous
-        </Button>
-        <div className="text-sm font-medium">
-          Page {page + 1} of {totalPages}
+          <ChevronLeft />
+        </PageButton>
+        <div className="px-2.5 text-[13px] tabular-nums text-muted-foreground">
+          Page <span className="font-medium text-foreground">{page + 1}</span>{' '}
+          of {totalPages}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
+        <PageButton
+          label="Next page"
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages - 1}
         >
-          Next
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+          <ChevronRight />
+        </PageButton>
       </div>
     </div>
+  );
+}
+
+function PageButton({
+  label,
+  onClick,
+  disabled,
+  children
+}: {
+  label: string;
+  onClick: () => void;
+  disabled: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border bg-card text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40 [&_svg]:size-4"
+    >
+      {children}
+    </button>
   );
 }
