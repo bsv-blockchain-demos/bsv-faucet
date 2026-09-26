@@ -23,6 +23,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TablePagination } from '@/components/ui/table-pagination';
 import useWalletMonitor from '@/hooks/useWalletMonitor';
+import { toast } from '@/hooks/use-toast';
 
 const PAGE_SIZE = 20;
 
@@ -60,12 +61,31 @@ const safelyGetNestedProp = (obj: any, path: string) => {
   return path.split('.').reduce((acc, part) => acc && acc[part], obj) ?? 'Invalid';
 };
 
+function RowCopyButton({
+  label,
+  onClick
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={label}
+      className="shrink-0 rounded p-0.5 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <Copy className="h-3.5 w-3.5" aria-hidden />
+      <span className="sr-only">{label}</span>
+    </button>
+  );
+}
+
 export default function TreasuryDepositHistory() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dialogError, setDialogError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
 
   useWalletMonitor();
@@ -97,10 +117,21 @@ export default function TreasuryDepositHistory() {
     fetchTransactions();
   }, []);
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).catch(() => {
-      setDialogError('Failed to copy to clipboard');
+  // Toasts rather than an inline error, so copying from the list and from the
+  // details dialog report the same way.
+  const copied = (label: string) =>
+    toast({ title: 'Copied to clipboard', description: `${label} copied` });
+  const copyFailed = (label: string) =>
+    toast({
+      title: 'Error',
+      description: `Failed to copy ${label}`,
+      variant: 'destructive'
     });
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => copied('Txid'), () => copyFailed('txid'));
   };
 
   const copyBeef = async (txid: string) => {
@@ -112,8 +143,9 @@ export default function TreasuryDepositHistory() {
     });
     try {
       await navigator.clipboard.write([new ClipboardItem({ 'text/plain': beef })]);
+      copied('BEEF');
     } catch {
-      setDialogError('Failed to copy BEEF');
+      copyFailed('BEEF');
     }
   };
 
@@ -127,7 +159,6 @@ export default function TreasuryDepositHistory() {
 
   const handleDetailsClick = (tx: Transaction) => {
     setSelectedTransaction(tx);
-    setDialogError(null);
   };
 
   if (error) {
@@ -172,8 +203,18 @@ export default function TreasuryDepositHistory() {
                           + {formatAmount(tx.amount)} BSV
                         </span>
                       </div>
-                      <div className="truncate font-mono text-[13px] text-muted-foreground">
-                        Txid: {tx.txid.substring(0, 8)}…
+                      <div className="flex items-center gap-1.5 font-mono text-[13px] text-muted-foreground">
+                        <span>Txid: {tx.txid.substring(0, 8)}…</span>
+                        <RowCopyButton
+                          label="Copy txid"
+                          onClick={() => copyToClipboard(tx.txid)}
+                        />
+                        <span aria-hidden>|</span>
+                        <span>BEEF</span>
+                        <RowCopyButton
+                          label="Copy BEEF"
+                          onClick={() => copyBeef(tx.txid)}
+                        />
                       </div>
                     </div>
                     <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:shrink-0 sm:justify-end">
@@ -194,13 +235,6 @@ export default function TreasuryDepositHistory() {
                           <DialogHeader>
                             <DialogTitle>Transaction Details</DialogTitle>
                           </DialogHeader>
-                          {dialogError && (
-                            <Alert variant="destructive">
-                              <AlertCircle className="h-4 w-4" />
-                              <AlertTitle>Error</AlertTitle>
-                              <AlertDescription>{dialogError}</AlertDescription>
-                            </Alert>
-                          )}
                           <div className="grid gap-4 py-4">
                             <div className="grid grid-cols-4 items-center gap-4">
                               <Label htmlFor="date" className="text-right">
