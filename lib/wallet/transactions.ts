@@ -22,6 +22,7 @@ interface UTXO {
   tx_hash: string;
   tx_pos: number;
   value: number;
+  isSpentInMempoolTx?: boolean;
 }
 
 // interface TransactionOutput {
@@ -119,8 +120,19 @@ export const createAndSendTransaction = async (
     const ESTIMATED_OUTPUT_SIZE = 34;
     const BASE_TX_SIZE = 10;
 
-    const utxos = await getUTXOs(senderAddress);
-    if (!utxos || utxos.length === 0) {
+    // WhatsOnChain keeps listing an output after a mempool transaction has
+    // spent it. Selecting one makes the broadcast fail as a double spend, so
+    // until the next block every withdrawal after the first would fail. Around
+    // a new block it can also list the same output twice, as unconfirmed and
+    // confirmed, and spending an output twice makes the transaction invalid.
+    const seen = new Set<string>();
+    const utxos = ((await getUTXOs(senderAddress)) as UTXO[]).filter((utxo) => {
+      const outpoint = `${utxo.tx_hash}:${utxo.tx_pos}`;
+      if (utxo.isSpentInMempoolTx || seen.has(outpoint)) return false;
+      seen.add(outpoint);
+      return true;
+    });
+    if (utxos.length === 0) {
       throw new Error('No UTXOs available');
     }
 
