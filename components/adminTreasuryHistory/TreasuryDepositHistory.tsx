@@ -30,15 +30,6 @@ const PAGE_SIZE = 20;
 interface Transaction {
   id: number;
   txid: string;
-  beefTx: {
-    txid: string;
-    vout: number;
-    value: number;
-  } | null;
-  vout: Array<{
-    address: string;
-    satoshis: number;
-  }>;
   txType: 'deposit';
   amount: string;
   date: string;
@@ -56,10 +47,6 @@ const TransactionSkeleton = () => (
     </div>
   </div>
 );
-
-const safelyGetNestedProp = (obj: any, path: string) => {
-  return path.split('.').reduce((acc, part) => acc && acc[part], obj) ?? 'Invalid';
-};
 
 function RowCopyButton({
   label,
@@ -270,17 +257,6 @@ export default function TreasuryDepositHistory() {
                               >
                                 View BEEF
                               </a>
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="vout" className="text-right">
-                                Vout
-                              </Label>
-                              <Input
-                                id="vout"
-                                value={safelyGetNestedProp(selectedTransaction, 'beefTx.vout')}
-                                className="col-span-3"
-                                readOnly
-                              />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                               <Label htmlFor="txType" className="text-right">
