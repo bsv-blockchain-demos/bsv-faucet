@@ -41,7 +41,7 @@ Fill in these values in `.env.local`:
 | `NEXT_PUBLIC_WALLET_AUTH_ENABLED`   | `true` adds the BSV Wallet tab to the sign-in and sign-up pages. Needs `FAUCET_AUTH_PRIVATE_KEY`. |
 | `NEXT_PUBLIC_WALLET_RELAY_ENABLED`  | `true` adds "Connect with phone via QR code" to the wallet tab. Needs `WALLET_RELAY_URL` and the relay in [`relay/`](relay/README.md). |
 
-Keep the sign-in and sign-up paths from [`.env.example`](.env.example). The other `POSTGRES_*` entries are unused by the current Prisma schema. reCAPTCHA is currently disabled.
+Keep the sign-in and sign-up paths from [`.env.example`](.env.example). Use a dedicated testnet wallet for the treasury and never commit its WIF.
 
 ### 3. Set up the database and start
 
@@ -73,22 +73,24 @@ For admin access, run `pnpm prisma:studio` and change your user's `role` to `adm
 | `pnpm dev`                            | Start the development server.                     |
 | `pnpm build`                          | Build for production.                             |
 | `pnpm start`                          | Serve the production build.                       |
+| `pnpm test`                           | Run the test suite.                               |
 | `pnpm prisma:migrate:dev --skip-seed` | Create and apply migrations after schema changes. |
 | `pnpm prisma:studio`                  | Browse and edit the development database.         |
 
-Pages and API routes live in `app/`, wallet logic in `lib/wallet/`, and the database schema and migrations in `prisma/`. Include generated migrations when contributing schema changes.
+Pages and API routes live in `app/`, wallet logic in `lib/wallet/`, tests in `tests/`, and the database schema and migrations in `prisma/`.
 
 Phone wallet sign-in by QR code needs the pairing relay in [`relay/`](relay/README.md), a separate always-on service deployed on Railway. Its README covers running it locally and deploying it.
 
 For Vercel, configure the environment variables and use `pnpm vercel-build` as the build command. It generates the Prisma client, applies committed migrations, and builds the app. Point Clerk's webhook at the deployed domain.
 
-Existing deployment and Clerk migration guides:
+## Contributing
 
-- [Clerk user migration](migration/README.md)
-- [Preview validation](PREVIEW_VALIDATION.md)
-- [Clerk configuration and user ID remapping](docs/CLERK_CUTOVER.md)
-- [Production cutover and rollback](CUTOVER.md)
+Issues and pull requests are welcome. Keep changes focused, run `pnpm test` and `pnpm build` before opening a pull request, and include generated Prisma migrations with any schema change.
+
+## Security
+
+Please do not report security problems in public issues. See [SECURITY.md](SECURITY.md) for how to report them privately.
 
 ## Licence
 
-[MIT](LICENSE.md)
+[Apache License 2.0](LICENSE). Portions first released under the MIT License are noted in [NOTICE](NOTICE).

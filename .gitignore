@@ -40,7 +40,7 @@ next-env.d.ts
 # prisma
 prisma/generated
 
-# clerk migration tooling: the cloned tool (its own bun project) and any
-# exports. Exports contain password hashes and user PII; never commit them.
+# Local user exports and tooling from the 2026 Clerk migration. Exports hold
+# password hashes and personal data: never commit them.
 /migration/migration-script/
 /migration/exports/
