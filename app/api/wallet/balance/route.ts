@@ -5,7 +5,7 @@ import {
   readCachedBalance,
   writeCachedBalance,
 } from '@/lib/wallet/balanceCache';
-import { ProviderError, getBalance } from '@/lib/wallet/regest';
+import { ProviderError, getBalance } from '@/lib/wallet/whatsOnChain';
 import { PrivateKey } from '@bsv/sdk';
 import { NextResponse } from 'next/server';
 

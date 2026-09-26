@@ -2,7 +2,7 @@
 // a client import a build-time error.
 import 'server-only';
 import cron from 'node-cron';
-import { getUTXOs, getRawTransaction } from './regest';
+import { getUTXOs, getRawTransaction } from './whatsOnChain';
 import { PrivateKey, Transaction, P2PKH, LockingScript } from '@bsv/sdk';
 import bs58check from 'bs58check';
 import { PrismaClient } from '@/prisma/generated/client';
