@@ -129,7 +129,7 @@ export default function TreasuryDepositHistory() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Treasury — deposit history</CardTitle>
+        <CardTitle>Treasury deposit history</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">

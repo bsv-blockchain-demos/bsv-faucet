@@ -398,7 +398,7 @@ export default function DashboardPage() {
               className="flex w-full items-center justify-between gap-2.5 rounded-xl bg-accent px-4 py-3.5 text-left text-accent-foreground transition-[filter] hover:brightness-[0.97]"
             >
               <span className="break-all font-mono text-[13px] font-semibold">
-                {adminWalletAddress || '—'}
+                {adminWalletAddress || '-'}
               </span>
               <Copy className="h-[18px] w-[18px] shrink-0" />
             </button>
