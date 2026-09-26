@@ -24,13 +24,15 @@ function MetricTile({
   value,
   unit,
   loading,
-  note
+  note,
+  maxDecimals = 0
 }: {
   label: string;
   value: number | null;
   unit: string;
   loading: boolean;
   note?: string;
+  maxDecimals?: number;
 }) {
   return (
     <div className="lift rounded-2xl border bg-card p-[22px]">
@@ -40,8 +42,10 @@ function MetricTile({
       {loading ? (
         <Skeleton className="h-7 w-32" />
       ) : (
-        <div className="font-display text-2xl font-semibold tabular-nums">
-          {(value ?? 0).toLocaleString()}{' '}
+        <div className="font-display whitespace-nowrap text-[22px] font-semibold tabular-nums">
+          {(value ?? 0).toLocaleString(undefined, {
+            maximumFractionDigits: maxDecimals
+          })}{' '}
           <span className="font-sans text-sm text-muted-foreground">{unit}</span>
         </div>
       )}
@@ -285,17 +289,24 @@ export default function DashboardPage() {
       </div>
 
       {/* Metrics tiles */}
-      <div className="grid-stagger grid grid-cols-3 gap-[18px] max-[860px]:grid-cols-1">
+      <div className="grid-stagger grid grid-cols-4 gap-[18px] max-[1100px]:grid-cols-2 max-[560px]:grid-cols-1">
         <MetricTile
           label="Faucet balance"
-          value={faucetBalance}
-          unit="satoshis"
+          value={faucetBalance === null ? null : faucetBalance / 100_000_000}
+          unit="BSV"
+          maxDecimals={8}
           loading={isLoading}
           note={
             balanceStale
               ? `Provider unavailable${balanceAsOf ? `, last updated ${new Date(balanceAsOf).toLocaleTimeString()}` : ''}`
               : undefined
           }
+        />
+        <MetricTile
+          label="Faucet balance in satoshis"
+          value={faucetBalance}
+          unit="sat"
+          loading={isLoading}
         />
         <MetricTile
           label="Withdrawn today"
@@ -307,7 +318,7 @@ export default function DashboardPage() {
           <div className="mb-2.5 text-[13px] font-medium text-muted-foreground">
             Daily limit
           </div>
-          <div className="font-display text-2xl font-semibold tabular-nums">
+          <div className="font-display whitespace-nowrap text-[22px] font-semibold tabular-nums">
             {MAX_DAILY_WITHDRAWAL.toLocaleString()}{' '}
             <span className="font-sans text-sm text-muted-foreground">sat</span>
           </div>
