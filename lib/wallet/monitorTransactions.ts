@@ -38,12 +38,12 @@ function getAddressFromLockingScript(lockingScript: LockingScript, isTestnet = t
 
 function transactionToObject(tx: Transaction) {
   return {
-    txid: Buffer.from(tx.hash()).toString('hex'),
+    // id(), not hash(): hash() is the same bytes in reverse order, which is
+    // not the txid any explorer or BEEF lookup recognises.
+    txid: tx.id('hex'),
     version: tx.version,
     inputs: tx.inputs.map((input) => ({
-      txid: input.sourceTransaction?.hash()
-        ? Buffer.from(input.sourceTransaction.hash()).toString('hex')
-        : 'unknown',
+      txid: input.sourceTXID ?? input.sourceTransaction?.id('hex') ?? 'unknown',
       vout: input.sourceOutputIndex,
       scriptSig: input.unlockingScript?.toASM() || 'unknown',
       sequence: input.sequence

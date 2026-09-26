@@ -185,3 +185,20 @@ export const getRawTransaction = async (
     url: `${apiUrl}/tx/${tx_hash}/hex`,
   });
 };
+
+/**
+ * The transaction as BEEF hex, with its unconfirmed ancestors and their merkle
+ * proofs, so it can be verified by SPV. Works for testnet and for mempool
+ * transactions. An unknown txid comes back as HTTP 500, not 404.
+ */
+export const getTransactionBeef = async (
+  txid: string,
+  network: 'testnet' | 'mainnet' = 'testnet'
+) => {
+  const apiUrl = API_URLS[network];
+  return request<string>('Error fetching transaction BEEF', {
+    method: 'GET',
+    url: `${apiUrl}/tx/${txid}/beef`,
+    responseType: 'text',
+  });
+};

@@ -64,7 +64,7 @@ const LatestTransactionsTableRow = ({
       <TableCell className="max-w-40 truncate">
         {showBeef ? (
           <a
-            href={`https://beef.xn--nda.network/${transaction.beefTx.txid}`}
+            href={`/api/transactions/${transaction.txid}/beef`}
             className="font-medium text-link hover:underline"
             target="_blank"
             rel="noopener noreferrer"

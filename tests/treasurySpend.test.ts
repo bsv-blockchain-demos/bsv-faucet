@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   getRawTransaction: vi.fn(),
   broadcastTransaction: vi.fn()
 }));
+const createTransaction = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/wallet/whatsOnChain', () => mocks);
 vi.mock('@clerk/nextjs/server', () => ({
@@ -16,7 +17,7 @@ vi.mock('@clerk/nextjs/server', () => ({
 vi.mock('@/prisma/generated/client', () => ({
   Prisma: {},
   PrismaClient: class {
-    transaction = { create: vi.fn() };
+    transaction = { create: createTransaction };
     user = { update: vi.fn() };
     $disconnect = vi.fn();
   }
@@ -74,6 +75,20 @@ describe('createAndSendTransaction UTXO selection', () => {
 
     const sent = Transaction.fromHex(mocks.broadcastTransaction.mock.calls[0][0]);
     expect(sent.inputs.map((input) => input.sourceOutputIndex)).toEqual([0, 1]);
+  });
+
+  it('records the real txids, not the byte-reversed hash', async () => {
+    const source = funding([50_000]);
+    mocks.getRawTransaction.mockResolvedValue(source.toHex());
+    mocks.getUTXOs.mockResolvedValue([
+      { tx_hash: source.id('hex'), tx_pos: 0, value: 50_000 }
+    ]);
+
+    const txid = await createAndSendTransaction(treasury.toWif(), recipient, 10_000);
+
+    const { beefTx } = createTransaction.mock.calls[0][0].data;
+    expect(beefTx.txid).toBe(txid);
+    expect(beefTx.inputs[0].txid).toBe(source.id('hex'));
   });
 
   it('refuses to send when every output is already spent in the mempool', async () => {
