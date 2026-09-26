@@ -103,6 +103,20 @@ export default function TreasuryDepositHistory() {
     });
   };
 
+  const copyBeef = async (txid: string) => {
+    // Safari drops clipboard access once the click handler awaits, so the
+    // fetch goes to ClipboardItem as a promise instead of being awaited here.
+    const beef = fetch(`/api/transactions/${txid}/beef`).then(async (response) => {
+      if (!response.ok) throw new Error('BEEF request failed');
+      return new Blob([await response.text()], { type: 'text/plain' });
+    });
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'text/plain': beef })]);
+    } catch {
+      setDialogError('Failed to copy BEEF');
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
@@ -159,8 +173,7 @@ export default function TreasuryDepositHistory() {
                         </span>
                       </div>
                       <div className="truncate font-mono text-[13px] text-muted-foreground">
-                        Txid: {tx.txid.substring(0, 8)}… | Beef Tx:{' '}
-                        {safelyGetNestedProp(tx, 'beefTx.txid').substring(0, 8)}…
+                        Txid: {tx.txid.substring(0, 8)}…
                       </div>
                     </div>
                     <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:shrink-0 sm:justify-end">
@@ -212,15 +225,17 @@ export default function TreasuryDepositHistory() {
                               />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="beefTx" className="text-right">
-                                Beef TX
-                              </Label>
-                              <Input
-                                id="beefTx"
-                                value={safelyGetNestedProp(selectedTransaction, 'beefTx.txid')}
-                                className="col-span-3"
-                                readOnly
-                              />
+                              <span className="text-right text-sm font-medium">
+                                BEEF
+                              </span>
+                              <a
+                                href={`/api/transactions/${selectedTransaction?.txid}/beef`}
+                                className="col-span-3 text-sm font-medium text-link hover:underline"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                View BEEF
+                              </a>
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                               <Label htmlFor="vout" className="text-right">
@@ -272,11 +287,11 @@ export default function TreasuryDepositHistory() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => copyToClipboard(safelyGetNestedProp(selectedTransaction, 'beefTx.txid'))}
-                              disabled={safelyGetNestedProp(selectedTransaction, 'beefTx.txid') === 'Invalid'}
+                              onClick={() => selectedTransaction && copyBeef(selectedTransaction.txid)}
+                              disabled={!selectedTransaction}
                             >
                               <Copy className="mr-2 h-4 w-4" />
-                              Copy Beef TX
+                              Copy BEEF
                             </Button>
                           </div>
                         </DialogContent>
