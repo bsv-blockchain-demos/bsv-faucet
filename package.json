@@ -1,10 +1,21 @@
 {
   "name": "bsv-faucet",
   "version": "1.0.0",
-  "description": "Create an open-source faucet service offering small amounts of digital tokens for testing purposes on the BSV Blockchain. This service aids developers and testers in their work without requiring them to acquire real digital currencies. It's applicable to non-production environments such as testnet.",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "private": true,
+  "description": "Testnet BSV faucet for developers building on the BSV blockchain.",
+  "keywords": [
+    "bsv",
+    "bitcoin-sv",
+    "testnet",
+    "faucet"
+  ],
+  "author": "BSV Association",
+  "license": "Apache-2.0",
+  "homepage": "https://bsvfaucet.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bsv-blockchain-demos/bsv-faucet.git"
+  },
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "next dev --turbo",
