@@ -1,5 +1,5 @@
 import { PrismaClient } from '@/prisma/generated/client';
-import { getUTXOs } from '../wallet/regest';
+import { getUTXOs } from './whatsOnChain';
 import cron from 'node-cron';
 
 const prisma = new PrismaClient();
@@ -15,7 +15,6 @@ const startSpentStatusMonitor = async () => {
       });
 
       for (const output of unspentOutputs) {
-        console.log(output)
         const isUnspent = await checkOutputStatus(output);
         if (!isUnspent) {
           await markOutputAsSpent(output);
@@ -23,7 +22,7 @@ const startSpentStatusMonitor = async () => {
         }
       }
 
-      console.log('Finished updating spent status', {unspentOutputs});
+      console.log('Finished updating spent status');
     } catch (error) {
       console.error('Error updating spent status:', error);
     }

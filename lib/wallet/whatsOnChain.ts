@@ -1,3 +1,6 @@
+// WhatsOnChain client for the faucet's blockchain reads and broadcasts:
+// UTXOs, balances, raw transactions and transaction broadcast. Every call
+// defaults to testnet. Reads retry with backoff; broadcasts do not.
 import axios, { AxiosRequestConfig } from 'axios';
 
 const API_URLS = {

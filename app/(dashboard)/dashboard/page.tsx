@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useUser } from '@clerk/nextjs';
-// import ReCAPTCHA from 'react-google-recaptcha';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -68,7 +67,6 @@ export default function DashboardPage() {
   const { user } = useUser();
   const [address, setAddress] = useState('');
   const [amount, setAmount] = useState('');
-  // const [captchaValue, setCaptchaValue] = useState('');
   const [remainingTime, setRemainingTime] = useState(0);
   const [totalWithdrawn, setTotalWithdrawn] = useState(0);
 
@@ -83,7 +81,6 @@ export default function DashboardPage() {
   // the 60s poll raises one toast per outage rather than one per tick.
   const staleNotifiedRef = useRef(false);
 
-  // const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
   const MAX_DAILY_WITHDRAWAL = parseInt(
     process.env.NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL || '1000000'
   );
@@ -187,7 +184,6 @@ export default function DashboardPage() {
       parseInt(amount) > MAX_DAILY_WITHDRAWAL
     )
       return `Invalid amount (max ${MAX_DAILY_WITHDRAWAL.toLocaleString()} satoshis)`;
-    // if (!captchaValue) return 'Please complete the captcha';
     if (remainingTime > 0)
       return 'Please wait for the cooldown period to end for this address';
     return null;
@@ -257,10 +253,6 @@ export default function DashboardPage() {
       setIsLoading(false);
     }
   };
-
-  // const onCaptchaChange = (value: string | null) => {
-  //  setCaptchaValue(value || '');
-  // };
 
   const formatTimeRemaining = (time: number) => {
     const hours = Math.floor(time / (60 * 60 * 1000));
@@ -355,7 +347,6 @@ export default function DashboardPage() {
                 onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
               />
             </div>
-            {/* <ReCAPTCHA sitekey={RECAPTCHA_SITE_KEY} onChange={onCaptchaChange} /> */}
 
             {totalWithdrawn > MAX_DAILY_WITHDRAWAL && (
               <div className="flex items-center gap-2 text-[13px] text-muted-foreground">

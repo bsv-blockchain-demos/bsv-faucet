@@ -1,3 +1,12 @@
+BSV Faucet
+Copyright 2024-2026 BSV Association
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Portions of this software were first released under the MIT License, including code derived from Vercel's Next.js admin dashboard template and contributions made during the 2024 hackathon where the faucet was built. Those portions remain available under the MIT License, reproduced below.
+
+--------------------------------------------------------------------------------
+
 The MIT License (MIT)
 
 Copyright (c) 2024 Vercel, Inc.

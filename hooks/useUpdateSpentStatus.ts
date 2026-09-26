@@ -18,8 +18,6 @@ const useSpentStatusMonitor = () => {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
 
-      const data = await response.json();
-      console.log(data);
     } catch (err) {
       // Handle any error that occurred during the fetch
       setError(err instanceof Error ? err.message : 'Unknown error occurred');

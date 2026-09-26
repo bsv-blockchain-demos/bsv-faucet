@@ -10,7 +10,7 @@ import {
   TransactionOutput,
   Script
 } from '@bsv/sdk';
-import { getUTXOs, getRawTransaction, broadcastTransaction } from './regest';
+import { getUTXOs, getRawTransaction, broadcastTransaction } from './whatsOnChain';
 import { Prisma, PrismaClient } from '@/prisma/generated/client';
 import { currentUser } from '@clerk/nextjs/server';
 import bs58checkModule from 'bs58check';

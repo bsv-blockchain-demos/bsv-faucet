@@ -7,11 +7,8 @@ const TITLES: Record<string, string> = {
   '/dashboard': 'Dashboard',
   '/requests': 'Requests',
   '/users': 'Users',
-  '/customers': 'Users',
   '/admin': 'Admin',
-  '/settings': 'Account settings',
-  '/wallet': 'Wallet',
-  '/transactions': 'Transactions'
+  '/settings': 'Account settings'
 };
 
 export function TopbarTitle() {
