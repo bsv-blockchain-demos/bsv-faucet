@@ -128,7 +128,7 @@ export const columns: ColumnDef<User>[] = [
     accessorKey: 'authMethod',
     header: ({ column }) => <SortHeader column={column} label="Auth" />,
     cell: ({ row }) => (
-      <Badge variant="brand">
+      <Badge variant={row.original.authMethod === 'wallet' ? 'brand' : 'amber'}>
         {row.original.authMethod === 'wallet' ? 'Wallet' : 'Email'}
       </Badge>
     )
@@ -137,7 +137,10 @@ export const columns: ColumnDef<User>[] = [
     accessorKey: 'role',
     header: ({ column }) => <SortHeader column={column} label="Role" />,
     cell: ({ row }) => (
-      <Badge variant="muted" className="capitalize">
+      <Badge
+        variant={row.original.role === 'admin' ? 'purple' : 'muted'}
+        className="capitalize"
+      >
         {row.original.role}
       </Badge>
     )

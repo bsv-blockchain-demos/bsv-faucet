@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Home, List, Settings, Shield, Users2 } from 'lucide-react';
+import { Github, Home, List, Settings, Shield, Users2 } from 'lucide-react';
 
 import { User } from './user';
 import { BsvLogo } from '@/components/icons';
@@ -62,9 +62,22 @@ export default async function DashboardLayout({
             <User />
           </header>
 
-          <main className="screen-fade mx-auto w-full max-w-[1240px] flex-1 p-7 max-[860px]:p-[18px] max-[560px]:pb-[84px]">
+          <main className="screen-fade mx-auto w-full max-w-[1240px] flex-1 p-7 max-[860px]:p-[18px]">
             {children}
           </main>
+
+          {/* The bottom padding clears the fixed mobile nav bar. */}
+          <footer className="mx-auto w-full max-w-[1240px] px-7 pb-7 max-[860px]:px-[18px] max-[860px]:pb-[18px] max-[560px]:pb-[84px]">
+            <a
+              href="https://github.com/bsv-blockchain-demos/bsv-faucet"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Github className="h-4 w-4" aria-hidden />
+              View source on GitHub
+            </a>
+          </footer>
         </div>
       </div>
     </Providers>

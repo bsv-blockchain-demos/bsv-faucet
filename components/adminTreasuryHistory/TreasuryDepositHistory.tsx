@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Copy, AlertCircle, ArrowUp } from 'lucide-react';
+import { Copy, AlertCircle, ArrowUp, ExternalLink } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -30,16 +30,8 @@ const PAGE_SIZE = 20;
 interface Transaction {
   id: number;
   txid: string;
-  beefTx: {
-    txid: string;
-    vout: number;
-    value: number;
-  } | null;
-  vout: Array<{
-    address: string;
-    satoshis: number;
-  }>;
   txType: 'deposit';
+  testnetFlag: boolean;
   amount: string;
   date: string;
 }
@@ -56,10 +48,6 @@ const TransactionSkeleton = () => (
     </div>
   </div>
 );
-
-const safelyGetNestedProp = (obj: any, path: string) => {
-  return path.split('.').reduce((acc, part) => acc && acc[part], obj) ?? 'Invalid';
-};
 
 function RowCopyButton({
   label,
@@ -204,7 +192,17 @@ export default function TreasuryDepositHistory() {
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 font-mono text-[13px] text-muted-foreground">
-                        <span>Txid: {tx.txid.substring(0, 8)}…</span>
+                        <span>
+                          Txid:{' '}
+                          <a
+                            href={`https://${tx.testnetFlag ? 'test.' : ''}whatsonchain.com/tx/${tx.txid}`}
+                            className="text-link hover:underline"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {tx.txid.substring(0, 8)}…
+                          </a>
+                        </span>
                         <RowCopyButton
                           label="Copy txid"
                           onClick={() => copyToClipboard(tx.txid)}
@@ -259,28 +257,19 @@ export default function TreasuryDepositHistory() {
                               />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
-                              <span className="text-right text-sm font-medium">
+                              <span className="text-right text-sm font-medium leading-none">
                                 BEEF
                               </span>
+                              {/* Styled as the read-only fields around it, but the whole box opens the BEEF. */}
                               <a
                                 href={`/api/transactions/${selectedTransaction?.txid}/beef`}
-                                className="col-span-3 text-sm font-medium text-link hover:underline"
+                                className="col-span-3 flex h-[50px] items-center justify-between gap-2 rounded-xl border-[1.5px] border-input bg-card px-4 text-[15px] font-medium text-link transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
                                 View BEEF
+                                <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />
                               </a>
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="vout" className="text-right">
-                                Vout
-                              </Label>
-                              <Input
-                                id="vout"
-                                value={safelyGetNestedProp(selectedTransaction, 'beefTx.vout')}
-                                className="col-span-3"
-                                readOnly
-                              />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                               <Label htmlFor="txType" className="text-right">

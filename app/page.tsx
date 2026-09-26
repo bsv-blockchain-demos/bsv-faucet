@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Zap, SlidersHorizontal, RefreshCw } from 'lucide-react';
+import { Zap, SlidersHorizontal, RefreshCw, Github } from 'lucide-react';
 import { BsvLogo } from '@/components/icons';
 import { ThemeToggle } from './(dashboard)/theme-toggle';
 import { WALLET_AUTH_ENABLED } from '@/lib/walletAuth';
@@ -52,11 +52,8 @@ const steps = [
 ];
 
 const footerLinks = [
-  { label: 'Docs', href: 'https://docs.bsvblockchain.org/' },
   { label: 'Hub', href: 'https://hub.bsvblockchain.org/' },
-  { label: 'X', href: 'https://x.com/BSVAssociation' },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/company/bsvassociation/' },
-  { label: 'YouTube', href: 'https://www.youtube.com/@BSVAssociation_' }
+  { label: 'X', href: 'https://x.com/BSVAssociation' }
 ];
 
 export default function LandingPage() {
@@ -236,11 +233,16 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t px-[clamp(20px,5vw,56px)] py-9">
         <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-5">
-          <div className="flex items-center gap-3">
-            <BsvLogo className="h-8 w-8 rounded-[9px]" />
-            <span className="text-sm text-muted-foreground">
-              © {year} BSV Blockchain. All rights reserved.
-            </span>
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-muted-foreground">
+            <span>© {year}</span>
+            <img
+              src="/bsva-triangle.png"
+              alt=""
+              aria-hidden
+              className="ml-1 h-3.5 w-3.5"
+            />
+            <span className="font-medium text-foreground">BSV Association.</span>
+            <span>A Swiss non-profit association.</span>
           </div>
           <div className="flex flex-wrap items-center gap-[22px]">
             {footerLinks.map((l) => (
@@ -255,12 +257,14 @@ export default function LandingPage() {
               </a>
             ))}
             <a
-              href="https://bsvassociation.org/"
+              href="https://github.com/bsv-blockchain-demos/bsv-faucet"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-semibold text-link hover:underline"
+              title="View source on GitHub"
+              className="text-muted-foreground transition-colors hover:text-foreground"
             >
-              BSV Association
+              <Github className="h-[18px] w-[18px]" aria-hidden />
+              <span className="sr-only">View source on GitHub</span>
             </a>
           </div>
         </div>
