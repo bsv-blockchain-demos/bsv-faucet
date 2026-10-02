@@ -39,6 +39,8 @@ Fill in these values in `.env.local`:
 | `NEXT_PUBLIC_MAX_DAILY_WITHDRAWAL`  | Per-user limit in satoshis, for example `10000000` (0.1 BSV). Defaults to `1000000` if unset. |
 | `WOC_API_KEY`                       | Optional WhatsOnChain API key, recommended to reduce shared rate-limit errors.                |
 | `NEXT_PUBLIC_WALLET_AUTH_ENABLED`   | `true` adds the BSV Wallet tab to the sign-in and sign-up pages. Needs `FAUCET_AUTH_PRIVATE_KEY`. |
+| `FAUCET_AUTH_PRIVATE_KEY`          | Dedicated server-side hex private key for verifying wallet sign-in proofs. Use a different key from the treasury and relay. |
+| `WALLET_RELAY_URL`                 | HTTP(S) origin of the pairing relay, for example `http://localhost:3021` during local development. Used to configure the app's rewrites. |
 | `NEXT_PUBLIC_WALLET_RELAY_ENABLED`  | `true` adds "Connect with phone via QR code" to the wallet tab. Needs `WALLET_RELAY_URL` and the relay in [`relay/`](relay/README.md). |
 
 Keep the sign-in and sign-up paths from [`.env.example`](.env.example). Use a dedicated testnet wallet for the treasury and never commit its WIF.
@@ -65,6 +67,14 @@ Create an account through the app after the webhook is connected. If the account
 The dashboard shows the treasury's public address under **Donate to faucet**. Send BSV testnet coins to that address before requesting a withdrawal. The faucet distributes existing coins; it does not create them.
 
 For admin access, run `pnpm prisma:studio` and change your user's `role` to `admin`.
+
+### 5. Optional wallet sign-in
+
+To enable wallet sign-in, set `NEXT_PUBLIC_WALLET_AUTH_ENABLED=true` and provide `FAUCET_AUTH_PRIVATE_KEY`. The current Clerk integration creates wallet accounts with generated usernames, so enable usernames in your Clerk instance and make email optional. Wallet sign-in still uses Clerk sessions and the same PostgreSQL user records.
+
+For phone pairing, also enable `NEXT_PUBLIC_WALLET_RELAY_ENABLED`, configure `WALLET_RELAY_URL`, and follow the [relay setup](relay/README.md). Rebuild the app after changing its public feature flags or deployed relay configuration.
+
+The withdrawal allowance is per account. Wallet account creation has no separate IP limit or captcha, so a new wallet identity can obtain a separate allowance.
 
 ## Development
 

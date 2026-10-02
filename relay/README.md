@@ -38,7 +38,9 @@ cp .env.example .env   # fill in WALLET_RELAY_PRIVATE_KEY
 pnpm dev
 ```
 
-Then in the app's `.env.local` set `NEXT_PUBLIC_WALLET_RELAY_ENABLED=true` and `WALLET_RELAY_URL=http://localhost:3021`, and set the relay's `ORIGIN` to the app's local URL. The QR page at `/sign-in-mobile` will show a code, but a real phone cannot pair with a plain `http://` origin: BSV Browser only accepts HTTPS origins, with localhost exempt for same-device development. To pair a phone locally, put the app behind an HTTPS tunnel and use the tunnel's URL as `ORIGIN`.
+In the app's `.env.local`, enable both `NEXT_PUBLIC_WALLET_AUTH_ENABLED=true` and `NEXT_PUBLIC_WALLET_RELAY_ENABLED=true`, provide the app's separate `FAUCET_AUTH_PRIVATE_KEY`, and set `WALLET_RELAY_URL=http://localhost:3021`. Complete the Clerk configuration in the [main README](../README.md#5-optional-wallet-sign-in).
+
+Set the relay's `ORIGIN` to the app's origin. For a real phone, expose both the app over HTTPS and the relay over secure WebSocket, then set `ORIGIN` to the app's HTTPS URL and `RELAY_URL` to the relay's public `wss://` URL. An app tunnel alone is insufficient: the phone connects directly to the relay and cannot reach your computer through `localhost`. Same-device development can use local addresses.
 
 ## Deployment on Railway
 
