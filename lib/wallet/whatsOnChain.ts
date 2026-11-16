@@ -1,6 +1,8 @@
 // WhatsOnChain client for the faucet's blockchain reads and broadcasts:
 // UTXOs, balances, raw transactions and transaction broadcast. Every call
-// defaults to testnet. Reads retry with backoff; broadcasts do not.
+// defaults to testnet. Reads retry with backoff; broadcasts retry only after
+// a rate-limit rejection.
+import { Transaction } from '@bsv/sdk';
 import axios, { AxiosRequestConfig } from 'axios';
 
 const API_URLS = {
@@ -82,13 +84,16 @@ const isRetryable = (status: number | undefined) =>
 const request = async <T>(
   description: string,
   config: AxiosRequestConfig,
-  { retry = true }: { retry?: boolean } = {}
+  {
+    retryOn = isRetryable
+  }: { retryOn?: (status: number | undefined) => boolean } = {}
 ): Promise<T> => {
-  const maxAttempts = retry ? MAX_ATTEMPTS : 1;
   let lastStatus: number | undefined;
   let lastError: unknown;
+  let attempts = 0;
 
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    attempts = attempt;
     try {
       const response = await axios.request<T>({
         timeout: REQUEST_TIMEOUT_MS,
@@ -102,7 +107,7 @@ const request = async <T>(
         ? error.response?.status
         : undefined;
 
-      if (!isRetryable(lastStatus) || attempt === maxAttempts) {
+      if (!retryOn(lastStatus) || attempt === MAX_ATTEMPTS) {
         break;
       }
 
@@ -118,10 +123,10 @@ const request = async <T>(
   }
 
   const statusText = lastStatus ? `HTTP ${lastStatus}` : 'network error';
-  const attemptText = maxAttempts === 1 ? '1 attempt' : `${maxAttempts} attempts`;
+  const attemptText = attempts === 1 ? '1 attempt' : `${attempts} attempts`;
   throw new ProviderError(
     `${description}: WhatsOnChain request failed after ${attemptText} (${statusText})`,
-    { status: lastStatus, attempts: maxAttempts, cause: lastError }
+    { status: lastStatus, attempts, cause: lastError }
   );
 };
 
@@ -161,18 +166,34 @@ export const broadcastTransaction = async (
   network: 'testnet' | 'mainnet' = 'testnet'
 ) => {
   const apiUrl = API_URLS[network];
-  // Deliberately not retried: a broadcast that timed out may still have landed,
-  // and a second attempt would come back as "txn-already-known" and read as a
-  // failure for a transaction that actually succeeded.
-  return request<string>(
-    'Error broadcasting transaction',
-    {
-      method: 'POST',
-      url: `${apiUrl}/tx/raw`,
-      data: { txhex: rawTx },
-    },
-    { retry: false }
-  );
+  // Retried only after a 429. The rate limiter turns the request away before
+  // it reaches a node, so trying again cannot send the transaction twice. A
+  // timeout or 5xx is not retried: that broadcast may still have landed.
+  try {
+    return await request<string>(
+      'Error broadcasting transaction',
+      {
+        method: 'POST',
+        url: `${apiUrl}/tx/raw`,
+        data: { txhex: rawTx },
+      },
+      { retryOn: (status) => status === 429 }
+    );
+  } catch (error) {
+    // If a rejected attempt did reach a node after all, the retry reports the
+    // transaction as already known. It is in the mempool, so that is success.
+    if (isAlreadyKnown(error)) return Transaction.fromHex(rawTx).id('hex');
+    throw error;
+  }
+};
+
+const isAlreadyKnown = (error: unknown): boolean => {
+  if (!(error instanceof ProviderError) || !axios.isAxiosError(error.cause)) {
+    return false;
+  }
+  const body = error.cause.response?.data;
+  const text = typeof body === 'string' ? body : JSON.stringify(body ?? '');
+  return /txn-already-known|already in the mempool/i.test(text);
 };
 
 export const getRawTransaction = async (
